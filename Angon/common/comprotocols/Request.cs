@@ -7,10 +7,10 @@ namespace Angon.common.comprotocols
         public List<byte> Data { get; set; }
         public Request(List<byte> data)
         {
-            this.Data = data;
+            Data = data;
         }
 
-        public void ParseRequest() 
+        public void ParseRequest()
         {
 
         }

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace Angon.master
+namespace Angon.master.server
 {
     class Reciever
     {
