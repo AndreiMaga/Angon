@@ -1,18 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using Angon.common.comprotocols.requests;
+using Angon.common.headers;
 
 namespace Angon.common.comprotocols
 {
     class RequestFactory
     {
-        internal static Request Factory(List<byte> data)
+        internal static Request Factory(WraperHeader wh)
         {
-            switch (data[0])
+            switch (wh.Type)
             {
-                case (byte)'P':
-                    return new ProcessRequest(data);
+
+                case 'C':
+                    return new ClientHello(wh.Data);
+
+                case 'P':
+                    return new OrderPost(wh.Data);
+                //case (byte)'S':
 
                 default:
-                    return new Request(data);
+                    return new Request(wh.Data);
             }
         }
     }

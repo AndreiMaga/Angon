@@ -1,4 +1,5 @@
 ﻿using Angon.common.config;
+using Angon.common.reciever;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -7,8 +8,8 @@ namespace Angon.master.server
 {
     class Server
     {
-        TcpListener ListeningServer = null;
-        Server()
+        readonly TcpListener ListeningServer = null;
+        public Server()
         {
             try
             {
@@ -18,15 +19,15 @@ namespace Angon.master.server
                 ListeningServer.Start();
                 while (true)
                 {
+                    TcpClient client = ListeningServer.AcceptTcpClient();
                     Task task = new Task(() =>
                     {
-                        TcpClient client = ListeningServer.AcceptTcpClient();
                         new Reciever().ProcessClient(client);
                     });
                     task.Start();
                 }
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
 
             }

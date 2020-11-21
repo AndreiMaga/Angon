@@ -1,18 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace Angon.common.comprotocols
 {
     class Request
     {
-        public List<byte> Data { get; set; }
-        public Request(List<byte> data)
+        public byte[] Data { get; set; }
+        public TcpClient Client { get; set; }
+        public Request(byte[] data)
         {
             Data = data;
-        }
-
-        public void ParseRequest()
-        {
-
         }
 
     }
