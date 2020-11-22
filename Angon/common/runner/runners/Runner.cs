@@ -3,8 +3,15 @@ using Angon.common.comprotocols.requests;
 
 namespace Angon.common.runner.runners
 {
+    /// <summary>
+    /// Runner for requests
+    /// </summary>
     class Runner
     {
+        /// <summary>
+        /// Starts the correct runner
+        /// </summary>
+        /// <param name="request"></param>
         public static void Start(Request request)
         {
             switch (request)

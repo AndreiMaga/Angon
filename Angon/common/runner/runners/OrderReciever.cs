@@ -1,14 +1,22 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
-using Angon.common.storage;
 using Angon.common.utils;
 using System;
 using System.IO;
 
 namespace Angon.common.runner.runners
 {
+    /// <summary>
+    /// Class wraping <see cref="OrderReciever.Recieve(ClientHello, string)"/>
+    /// Server side
+    /// </summary>
     class OrderReciever
     {
+        /// <summary>
+        /// Recieves the zip file from <seealso cref="ServerHelloRunner.Run(ServerHello)"/>
+        /// </summary>
+        /// <param name="ch"><see cref="ClientHello"/>the client hello</param>
+        /// <param name="sha">the sha given to the order</param>
         public static void Recieve(ClientHello ch, string sha)
         {
             string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;

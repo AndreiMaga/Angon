@@ -1,16 +1,20 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Angon.common.runner.runners
 {
+    /// <summary>
+    /// Runner for when the client recieves Server Hello Header
+    /// Client side code
+    /// </summary>
     class ServerHelloRunner
     {
+        /// <summary>
+        /// Runs the logic for when Server Hello Header was recieved
+        /// </summary>
+        /// <param name="ch"><see cref="ServerHello"/> containing all the necessary information</param>
         public static void Run(ServerHello ch)
         {
 

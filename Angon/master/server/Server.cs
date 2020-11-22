@@ -7,9 +7,19 @@ using System.Threading.Tasks;
 
 namespace Angon.master.server
 {
+    /// <summary>
+    /// Server that runs on the master.
+    /// </summary>
     class Server
     {
+        /// <summary>
+        /// The <see cref="TcpListener"/> for the server.
+        /// </summary>
         readonly TcpListener ListeningServer = null;
+
+        /// <summary>
+        /// Default constructor that also starts the listening process.
+        /// </summary>
         public Server()
         {
             try

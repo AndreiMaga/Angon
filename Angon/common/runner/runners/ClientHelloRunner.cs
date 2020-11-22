@@ -1,25 +1,35 @@
 ﻿using Angon.common.comprotocols.requests;
-using Angon.common.config;
 using Angon.common.headers;
 using Angon.common.storage;
 using Angon.common.utils;
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Angon.common.runner.runners
 {
+    /// <summary>
+    /// Runner for the Client Hello Header.
+    /// Server side
+    /// </summary>
     class ClientHelloRunner
     {
-
+        /// <summary>
+        /// Decides if the client can place a new order
+        /// </summary>
+        /// <param name="ch"><see cref="ClientHelloHeader"/> the client hello header containing all information</param>
+        /// <returns>true if the client does not have any pending orders</returns>
         private static bool DecideAproval(ClientHelloHeader ch)
         {
             return !StorageProvider.GetInstance().ClientHasOrder(ch.ClientIP);
         }
 
+        /// <summary>
+        /// Creates a SHA256 string from the Client Hello Header
+        /// </summary>
+        /// <param name="ch"><see cref="ClientHelloHeader"/> the client hello header containing all information</param>
+        /// <returns><see cref="SHA256"/> represented as a string</returns>
         public static String CreateSha(ClientHelloHeader ch)
         {
             String input = ch.ClientIP + ch.ClientUTCTime + ch.ClientVersion + ch.SizeInBytes;
@@ -38,24 +48,35 @@ namespace Angon.common.runner.runners
             }
         }
 
-        private static ServerHelloHeader createServerHelloHeader(bool aproval, string sha)
+        /// <summary>
+        /// Creates a Server Hello Header
+        /// </summary>
+        /// <param name="aproval">can the client start place a new order</param>
+        /// <param name="sha">the sha of the order, the new or old one</param>
+        /// <returns></returns>
+        private static ServerHelloHeader CreateServerHelloHeader(bool aproval, string sha) => new ServerHelloHeader
         {
-            ServerHelloHeader shh = new ServerHelloHeader
-            {
-                AcceptedRequest = aproval,
-                Sha = sha
-            };
-            return shh;
-        }
+            AcceptedRequest = aproval,
+            Sha = sha
+        };
 
+        /// <summary>
+        /// Gets the existing sha of the pending order
+        /// </summary>
+        /// <param name="chh"><see cref="ClientHelloHeader"/> containing all the information needed</param>
+        /// <returns><see cref="SHA256"/> of pending order</returns>
         private static string GetExistingSha(ClientHelloHeader chh)
         {
             return StorageProvider.GetInstance().GetClientSha(chh.ClientIP);
         }
 
+        /// <summary>
+        /// Runs the logic for Client Hello
+        /// </summary>
+        /// <param name="ch"><see cref="ClientHello"/></param>
         public static void Run(ClientHello ch)
         {
-            
+
             bool aproval = true;
             string sha = CreateSha(ch.header);
             /* SKIP FOR NOW 
@@ -71,7 +92,7 @@ namespace Angon.common.runner.runners
             }
             */
 
-            ServerHelloHeader shh = createServerHelloHeader(aproval, sha);
+            ServerHelloHeader shh = CreateServerHelloHeader(aproval, sha);
             byte[] dataArray = ByteArrayUtils.ToByteArray(shh);
 
             // Wrap the ServerHello Header
@@ -97,7 +118,10 @@ namespace Angon.common.runner.runners
                 OrderReciever.Recieve(ch, sha);
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ch"></param>
         public static void ContinueExisting(ClientHello ch)
         {
 

@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace Angon.common.utils
 {
+    /// <summary>
+    /// Suite of IO utilities
+    /// </summary>
     class IOUtils
     {
+        /// <summary>
+        /// Copy the directory <paramref name="sourceDirName"/> to <paramref name="destDirName"/>
+        /// </summary>
+        /// <param name="sourceDirName">The source from where to copy</param>
+        /// <param name="destDirName">Where to copy it</param>
+        /// <param name="copySubDirs">Should it also include the sub dirs from the source</param>
         public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             // Get the subdirectories for the specified directory.

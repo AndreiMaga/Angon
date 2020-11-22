@@ -87,9 +87,10 @@ namespace Angon.common.storage
             var command = connection.CreateCommand();
             command.CommandText = @"SELECT * FROM orders WHERE ip=$ip";
             command.Parameters.AddWithValue("$ip", ip);
-            using(var reader = command.ExecuteReader())
+            using (var reader = command.ExecuteReader())
             {
-                if(reader.Read()){
+                if (reader.Read())
+                {
                     return true;
                 }
             }

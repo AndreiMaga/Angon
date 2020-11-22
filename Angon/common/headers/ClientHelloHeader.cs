@@ -25,7 +25,7 @@ namespace Angon.common.headers
             sizeInBytes = (long)info.GetValue("SizeInBytes", typeof(long));
             clientVersion = (string)info.GetValue("ClientVersion", typeof(string));
 
-            
+
         }
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {

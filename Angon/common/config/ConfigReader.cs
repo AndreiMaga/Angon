@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace Angon.common.config
@@ -10,16 +9,31 @@ namespace Angon.common.config
     /// </summary>
     class ConfigReader
     {
+        /// <summary>
+        /// Singleton instance 
+        /// </summary>
         private static ConfigReader instance;
+
+        /// <summary>
+        /// The loaded config
+        /// </summary>
         public Config Config { get; private set; }
+
+        /// <summary>
+        /// Signleton constructor
+        /// </summary>
         private ConfigReader()
         {
             Config = JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"));
         }
 
+        /// <summary>
+        /// Signleton getter
+        /// </summary>
+        /// <returns>Signleton <see cref="instance"/></returns>
         public static ConfigReader GetInstance()
         {
-            if(instance == null)
+            if (instance == null)
             {
                 instance = new ConfigReader();
             }
