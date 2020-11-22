@@ -2,7 +2,7 @@
 using Angon.common.config;
 using Angon.common.storage;
 using Angon.master.server;
-using Angon.slave.client;
+using Angon.client;
 using CommandLine;
 using System;
 using System.Collections.Generic;

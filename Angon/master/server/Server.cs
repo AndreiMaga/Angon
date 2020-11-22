@@ -1,5 +1,6 @@
 ﻿using Angon.common.config;
 using Angon.common.reciever;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace Angon.master.server
                     task.Start();
                 }
             }
-            catch (SocketException)
+            catch (Exception)
             {
 
             }

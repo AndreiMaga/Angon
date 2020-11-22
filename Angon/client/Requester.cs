@@ -8,7 +8,7 @@ using System.IO.Compression;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Angon.slave.client
+namespace Angon.client
 {
 
     class Requester
