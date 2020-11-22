@@ -22,7 +22,7 @@ namespace Angon.common.runner.runners
 
             // if the order request was accepted
             // send the zip
-            string path = ConfigReader.GetInstance().Config.SavePath + "/zipToSend/temp.zip";
+            string path = ConfigReader.GetInstance().Config.SavePath + "\\zipToSend\\temp.zip";
 
             long size = new FileInfo(path).Length;
 
@@ -30,16 +30,19 @@ namespace Angon.common.runner.runners
                 ConfigReader.GetInstance().Config.WriteSize :
                 (int)size;
 
+            Console.WriteLine("Recieved sha {0}!", ch.header.Sha);
+            Console.WriteLine("Will send {0} bytes!", size);
+
             byte[] byteArray = new byte[readSize];
+            FileStream fs = File.OpenRead(path);
             while (size > 0)
             {
-                File.OpenRead(path).Read(byteArray, 0, readSize);
-                ch.Client.GetStream().Write(byteArray, 0, byteArray.Length); // send the array
+                fs.Read(byteArray, 0, readSize);
+                ch.Client.GetStream().Write(byteArray, 0, readSize); // send the array
                 size -= readSize;
             }
 
             // Done, now register the sha to the local database for future operations
-
         }
     }
 }

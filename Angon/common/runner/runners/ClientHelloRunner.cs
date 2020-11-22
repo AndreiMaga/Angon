@@ -6,6 +6,7 @@ using Angon.common.utils;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -54,6 +55,10 @@ namespace Angon.common.runner.runners
 
         public static void Run(ClientHello ch)
         {
+            
+            bool aproval = true;
+            string sha = CreateSha(ch.header);
+            /* SKIP FOR NOW 
             bool aproval = DecideAproval(ch.header);
             string sha;
             if (aproval == false)
@@ -64,6 +69,7 @@ namespace Angon.common.runner.runners
             {
                 sha = CreateSha(ch.header);
             }
+            */
 
             ServerHelloHeader shh = createServerHelloHeader(aproval, sha);
             byte[] dataArray = ByteArrayUtils.ToByteArray(shh);
@@ -76,6 +82,9 @@ namespace Angon.common.runner.runners
             };
 
             byte[] byteArray = ByteArrayUtils.ToByteArray(wraper);
+            byte[] sizeArray = BitConverter.GetBytes(byteArray.Length);
+            Console.WriteLine("Will send {0} bytes to the client", byteArray.Length);
+            ch.Client.GetStream().Write(sizeArray, 0, sizeof(int)); // long has 8 bytes
             ch.Client.GetStream().Write(byteArray, 0, byteArray.Length);
 
             // Wait for the orderpost
@@ -93,5 +102,6 @@ namespace Angon.common.runner.runners
         {
 
         }
+
     }
 }

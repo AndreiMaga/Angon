@@ -1,6 +1,11 @@
-﻿using Angon.common.config;
+﻿using Angon.common.cmd;
+using Angon.common.config;
 using Angon.common.storage;
 using Angon.master.server;
+using Angon.slave.client;
+using CommandLine;
+using System;
+using System.Collections.Generic;
 
 namespace Angon
 {
@@ -8,23 +13,65 @@ namespace Angon
     {
         static void Main(string[] args)
         {
+            CommandLine.Parser.Default.ParseArguments<Options>(args).WithParsed(Run).WithNotParsed(HandleErrors);
+        }
 
-            //Force load Storage
+        static void Run (Options options)
+        {
+            // Force load Storage
             StorageProvider.GetInstance();
 
-            if(ConfigReader.GetInstance().Config.Type == 0) // Master
+            if (options.MasterMode)
+            {
+                RunMaster(options);
+            }
+            if(options.SlaveMode)
+            {
+                RunSlave(options);
+            }
+
+            if(options.PathToExeFolder != "" && options.PathToInputFolder != "")
+            {
+                RunClient(options);
+            }
+
+
+            // Normal mode, without any arguments
+            if (ConfigReader.GetInstance().Config.Type == 0) // Master
             {
                 // start new server
-                new Server();
+                RunMaster(null);
             }
-            else if(ConfigReader.GetInstance().Config.Type == 1)
+
+            else if (ConfigReader.GetInstance().Config.Type == 1)
             {
                 // TODO client
             }
-            else
+        }
+
+        static void HandleErrors(IEnumerable<Error> errs)
+        {
+            foreach(Error e in errs)
             {
-                // Log that the type is not ok!
+                // log e
+                Console.WriteLine(e);
             }
+        }
+
+
+        static void RunMaster(Options options)
+        {
+            new Server();
+        }
+
+        static void RunSlave(Options options)
+        {
+
+        }
+
+        static void RunClient(Options options)
+        {
+            Requester.RunFromFolders(options.PathToExeFolder, options.PathToInputFolder);
         }
     }
 }

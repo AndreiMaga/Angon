@@ -1,10 +1,10 @@
 ﻿{
-    "Type": 1,
-    "Ip": "localhost",
+    "Type": 0,
+    "Ip": "127.0.0.1",
     "Port": 8989,
-    "SavePath": "D:\temp",
-    "ReadSize": 2147483647,
-    "WriteSize": 2147483647,
-    "PredefinedIP": "",
-    "Version" :  "0.0.1"
+    "SavePath": "D:\\temp",
+    "ReadSize": 512,
+    "WriteSize": 512,
+    "PredefinedIP": "127.0.0.1",
+    "Version": "0.0.1"
 }

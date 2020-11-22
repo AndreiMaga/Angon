@@ -13,17 +13,47 @@ namespace Angon.slave.client
 
     class Requester
     {
+
+
         // This will be run when a Client needs to send data to the Master to be run.
         public static void RunFromFolders(string exeDirectoryPath, string inputDirectoryPath)
         {
-            string basePath = ConfigReader.GetInstance().Config.SavePath + "/zipToSend";
-            File.Move(exeDirectoryPath, basePath + "/temp/exe");
-            File.Move(inputDirectoryPath, basePath + "/temp/input");
+            string basePath = ConfigReader.GetInstance().Config.SavePath + "\\zipToSend";
 
-            ZipFile.CreateFromDirectory(basePath+"/temp", basePath+"/temp.zip");
+            try
+            {
+                Directory.Delete(basePath + "\\temp\\exe");
+                
 
-            File.Delete(basePath+"/temp/exe");
-            File.Delete(basePath + "/temp/input");
+            }catch(IOException)
+            {
+                // if the directory does not exist, ignore
+            }
+
+            try
+            {
+                Directory.Delete(basePath + "\\temp\\input");
+            }
+            catch (IOException)
+            {
+                // if the directory does not exist, ignore
+            }
+
+            try
+            {
+                Directory.CreateDirectory(basePath + "\\temp");
+
+            }
+            catch (IOException)
+            {
+                // if the directory already exsists, ignore
+            }
+
+
+            IOUtils.DirectoryCopy(exeDirectoryPath, basePath + "\\temp\\exe", true);
+            IOUtils.DirectoryCopy(inputDirectoryPath, basePath + "\\temp\\input", true);
+
+            ZipFile.CreateFromDirectory(basePath+"/temp", basePath+"\\temp.zip");
 
             SendClientHello(CreateClientHello(basePath + "/temp.zip"));
         }
@@ -45,9 +75,16 @@ namespace Angon.slave.client
             };
             byte[] byteArray = ByteArrayUtils.ToByteArray(wraperHeader);
 
+
+            Console.WriteLine("Sending {0} bytes to server!", byteArray.Length);
             TcpClient serverConnection = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.Port);
+
+
+            byte[] sizeArray = BitConverter.GetBytes(byteArray.Length);
+            serverConnection.GetStream().Write(sizeArray, 0, sizeof(int));
             serverConnection.GetStream().Write(byteArray, 0, byteArray.Length); // Write Client Hello
 
+            Console.WriteLine("Starting the listener");
             Task task = new Task(() =>
             {
                 new Reciever().ProcessClient(serverConnection);

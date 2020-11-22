@@ -15,7 +15,8 @@ namespace Angon.common.comprotocols
 
                 case 'P':
                     return new OrderPost(wh.Data);
-                //case (byte)'S':
+                case 'S':
+                    return new ServerHello(wh.Data);
 
                 default:
                     return new Request(wh.Data);

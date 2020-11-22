@@ -40,7 +40,7 @@ namespace Angon.common.utils
         {
             try
             {
-                using (var fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fs = new FileStream(fileName, File.Exists(fileName) ? FileMode.Append : FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     fs.Write(byteArray, 0, byteArray.Length);
                     return true;

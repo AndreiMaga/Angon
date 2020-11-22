@@ -16,6 +16,7 @@ namespace Angon.common.storage
         StorageProvider()
         {
             connection = new SqliteConnection("Data Source=storage.db");
+            //SQLitePCL.raw.SetProvider(new SQLitePCL.);
             connection.Open();
         }
         ~StorageProvider()
