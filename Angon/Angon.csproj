@@ -107,10 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="common\cmd\Options.cs" />
-    <Compile Include="common\comprotocols\requests\ClientHello.cs" />
     <Compile Include="common\comprotocols\Request.cs" />
     <Compile Include="common\comprotocols\RequestFactory.cs" />
-    <Compile Include="common\comprotocols\requests\ServerHello.cs" />
+    <Compile Include="common\comprotocols\requests\GenericHello.cs" />
     <Compile Include="common\config\Config.cs" />
     <Compile Include="common\config\ConfigReader.cs" />
     <Compile Include="common\headers\ClientHelloHeader.cs" />

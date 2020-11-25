@@ -1,4 +1,5 @@
 ﻿using Angon.common.comprotocols.requests;
+using Angon.common.headers;
 using Angon.common.storage.data;
 using Microsoft.Data.Sqlite;
 using System;
@@ -97,7 +98,7 @@ namespace Angon.common.storage
             return false;
         }
 
-        public void ClientRegisteredOrder(ClientHello ch, string sha)
+        public void ClientRegisteredOrder(GenericHello<ClientHelloHeader> ch, string sha)
         {
             using (var transaction = connection.BeginTransaction())
             {

@@ -1,5 +1,6 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
+using Angon.common.headers;
 using System;
 using System.IO;
 
@@ -15,7 +16,7 @@ namespace Angon.common.runner.runners
         /// Runs the logic for when Server Hello Header was recieved
         /// </summary>
         /// <param name="ch"><see cref="ServerHello"/> containing all the necessary information</param>
-        public static void Run(ServerHello ch)
+        public static void Run(GenericHello<ServerHelloHeader> ch)
         {
 
             if (!ch.header.AcceptedRequest)

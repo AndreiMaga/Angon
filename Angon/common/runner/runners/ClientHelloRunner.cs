@@ -74,7 +74,7 @@ namespace Angon.common.runner.runners
         /// Runs the logic for Client Hello
         /// </summary>
         /// <param name="ch"><see cref="ClientHello"/></param>
-        public static void Run(ClientHello ch)
+        public static void Run(GenericHello<ClientHelloHeader> ch)
         {
 
             bool aproval = true;
@@ -122,7 +122,7 @@ namespace Angon.common.runner.runners
         /// 
         /// </summary>
         /// <param name="ch"></param>
-        public static void ContinueExisting(ClientHello ch)
+        public static void ContinueExisting(GenericHello<ClientHelloHeader> ch)
         {
 
         }

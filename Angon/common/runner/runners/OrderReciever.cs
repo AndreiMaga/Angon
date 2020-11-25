@@ -1,5 +1,6 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
+using Angon.common.headers;
 using Angon.common.utils;
 using System;
 using System.IO;
@@ -17,7 +18,7 @@ namespace Angon.common.runner.runners
         /// </summary>
         /// <param name="ch"><see cref="ClientHello"/>the client hello</param>
         /// <param name="sha">the sha given to the order</param>
-        public static void Recieve(ClientHello ch, string sha)
+        public static void Recieve(GenericHello<ClientHelloHeader> ch, string sha)
         {
             string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;
             try

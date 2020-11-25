@@ -1,5 +1,6 @@
 ﻿using Angon.common.comprotocols;
 using Angon.common.comprotocols.requests;
+using Angon.common.headers;
 
 namespace Angon.common.runner.runners
 {
@@ -16,10 +17,10 @@ namespace Angon.common.runner.runners
         {
             switch (request)
             {
-                case ClientHello ch:
+                case GenericHello<ClientHelloHeader> ch:
                     ClientHelloRunner.Run(ch);
                     break;
-                case ServerHello sh:
+                case GenericHello<ServerHelloHeader> sh:
                     ServerHelloRunner.Run(sh);
                     break;
             }

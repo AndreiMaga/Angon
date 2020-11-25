@@ -19,10 +19,10 @@ namespace Angon.common.comprotocols
             {
 
                 case 'C':
-                    return new ClientHello(wh.Data);
+                    return new GenericHello<ClientHelloHeader>(wh.Data);
 
                 case 'S':
-                    return new ServerHello(wh.Data);
+                    return new GenericHello<ServerHelloHeader>(wh.Data);
 
                 default:
                     return new Request(wh.Data);
