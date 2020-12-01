@@ -47,5 +47,7 @@
         /// The version of the program
         /// </summary>
         public string Version { get; set; }
+
+        public int MilisecondsToSleep { get; set; }
     }
 }
