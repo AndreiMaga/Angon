@@ -5,6 +5,10 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 
+///////////////////////////////////////////
+/// WORK IN PROGRESS, JUST PROTOTYPING  ///
+///////////////////////////////////////////
+
 namespace Angon.common.storage
 {
     // Signleton
@@ -35,40 +39,7 @@ namespace Angon.common.storage
             return instance;
         }
 
-
-        public void SaveClient(Client c)
-        {
-            using (var transaction = connection.BeginTransaction())
-            {
-                var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO slaves ip, port VALUES($ip, $port);";
-                command.Parameters.AddWithValue("$ip", c.Ip);
-                command.Parameters.AddWithValue("$port", c.Port);
-                command.ExecuteNonQuery();
-                transaction.Commit();
-            }
-        }
-
-
-        public List<Client> GetClients()
-        {
-            List<Client> clients = new List<Client>();
-            var command = connection.CreateCommand();
-            command.CommandText = @"SELECT ip, port FROM clients";
-
-            using (var reader = command.ExecuteReader())
-            {
-                int index = 0;
-                while (reader.Read())
-                {
-                    clients.Add(new Client(reader.GetString(index++), reader.GetString(index++)));
-                }
-            }
-
-            return clients;
-        }
-
-        internal string GetClientSha(string ip)
+        internal string GetSHAOfExistingOrder(string ip)
         {
             var command = connection.CreateCommand();
             command.CommandText = @"SELECT sha FROM orders WHERE ip=$ip";
@@ -86,7 +57,7 @@ namespace Angon.common.storage
         public Boolean ClientHasOrder(string ip)
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM orders WHERE ip=$ip";
+            command.CommandText = @"SELECT * FROM orders WHERE ip=$ip and status not like 'done'";
             command.Parameters.AddWithValue("$ip", ip);
             using (var reader = command.ExecuteReader())
             {
@@ -103,16 +74,42 @@ namespace Angon.common.storage
             using (var transaction = connection.BeginTransaction())
             {
                 var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO orders ip, time, size, sha, version, status VALUES($ip, $time, $size, $sha, $version, $status);";
+                command.CommandText = @"INSERT INTO orders ip, time, size, sha, version, status, created_at VALUES($ip, $time, $size, $sha, $version, $status, $$created_at);";
                 command.Parameters.AddWithValue("$ip", ch.header.ClientIP);
                 command.Parameters.AddWithValue("$time", ch.header.ClientUTCTime);
                 command.Parameters.AddWithValue("$size", ch.header.SizeInBytes);
                 command.Parameters.AddWithValue("$sha", sha);
                 command.Parameters.AddWithValue("$version", ch.header.ClientVersion);
                 command.Parameters.AddWithValue("$status", "just started");
+                command.Parameters.AddWithValue("$created_at", DateTime.UtcNow.ToString());
                 command.ExecuteNonQuery();
                 transaction.Commit();
             }
         }
+
+        public int NumberOfJobsToBeDone()
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT count(status) FROM orders WHERE status not like 'done'";
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return reader.GetInt32(0);
+                }
+            }
+            return -1;
+        }
+
+        public Order GetOldestNotFinishedOrder()
+        {
+            return null;
+        }
+
+        public List<Slave> GetSlaves()
+        {
+            return null;
+        }
+
     }
 }

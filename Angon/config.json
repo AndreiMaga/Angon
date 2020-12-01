@@ -6,5 +6,6 @@
     "ReadSize": 512,
     "WriteSize": 512,
     "PredefinedIP": "127.0.0.1",
-    "Version": "0.0.1"
+    "Version": "0.0.1",
+    "MilisecondsToSleep" :  500
 }

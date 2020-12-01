@@ -1,5 +1,6 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.headers;
+using Angon.common.sender;
 using Angon.common.storage;
 using Angon.common.utils;
 using System;
@@ -67,7 +68,7 @@ namespace Angon.common.runner.runners
         /// <returns><see cref="SHA256"/> of pending order</returns>
         private static string GetExistingSha(ClientHelloHeader chh)
         {
-            return StorageProvider.GetInstance().GetClientSha(chh.ClientIP);
+            return StorageProvider.GetInstance().GetSHAOfExistingOrder(chh.ClientIP);
         }
 
         /// <summary>
@@ -92,21 +93,14 @@ namespace Angon.common.runner.runners
             }
             */
 
-            ServerHelloHeader shh = CreateServerHelloHeader(aproval, sha);
-            byte[] dataArray = ByteArrayUtils.ToByteArray(shh);
-
             // Wrap the ServerHello Header
             WraperHeader wraper = new WraperHeader
             {
                 Type = 'S',
-                Data = dataArray
+                Data = ByteArrayUtils.ToByteArray(CreateServerHelloHeader(aproval, sha))
             };
 
-            byte[] byteArray = ByteArrayUtils.ToByteArray(wraper);
-            byte[] sizeArray = BitConverter.GetBytes(byteArray.Length);
-            Console.WriteLine("Will send {0} bytes to the client", byteArray.Length);
-            ch.Client.GetStream().Write(sizeArray, 0, sizeof(int)); // long has 8 bytes
-            ch.Client.GetStream().Write(byteArray, 0, byteArray.Length);
+            Sender.Send(wraper, ch.Client);
 
             // Wait for the orderpost
             if (aproval == false)

@@ -1,6 +1,7 @@
 ﻿using Angon.common.config;
 using Angon.common.headers;
 using Angon.common.reciever;
+using Angon.common.sender;
 using Angon.common.utils;
 using System;
 using System.IO;
@@ -84,24 +85,14 @@ namespace Angon.client
                 Type = 'C',
                 Data = ByteArrayUtils.ToByteArray(chh)
             };
-            byte[] byteArray = ByteArrayUtils.ToByteArray(wraperHeader);
 
-
-            Console.WriteLine("Sending {0} bytes to server!", byteArray.Length);
             TcpClient serverConnection = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.Port);
 
-
-            byte[] sizeArray = BitConverter.GetBytes(byteArray.Length);
-            serverConnection.GetStream().Write(sizeArray, 0, sizeof(int));
-            serverConnection.GetStream().Write(byteArray, 0, byteArray.Length); // Write Client Hello
+            Sender.Send(wraperHeader, serverConnection);
 
             Console.WriteLine("Starting the listener");
-            Task task = new Task(() =>
-            {
-                new Reciever().ProcessClient(serverConnection);
-            });
-            task.Start();
-            task.Wait(); // Client does not have to be async, so make the thread wait for it.
+
+            new Reciever().ProcessClient(serverConnection);
 
         }
     }
