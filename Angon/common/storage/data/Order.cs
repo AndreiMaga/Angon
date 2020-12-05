@@ -10,7 +10,7 @@ namespace Angon.common.storage.data
         string sha;
         string version;
         string status;
-        DateTime created_at;
+        DateTimeOffset created_at;
         bool splitted;
 
         public Order(string ip, string time, string size, string sha, string version, string status, string created_at,int splitted)
@@ -21,7 +21,7 @@ namespace Angon.common.storage.data
             this.Sha = sha;
             this.Version = version;
             this.Status = status;
-            this.Created_at = DateTime.Parse(created_at);
+            this.Created_at = DateTimeOffset.FromUnixTimeSeconds(long.Parse(created_at));
             this.Splitted = splitted != 0;
         }
 
@@ -31,7 +31,7 @@ namespace Angon.common.storage.data
         public string Sha { get => sha; set => sha = value; }
         public string Version { get => version; set => version = value; }
         public string Status { get => status; set => status = value; }
-        public DateTime Created_at { get => created_at; set => created_at = value; }
+        public DateTimeOffset Created_at { get => created_at; set => created_at = value; }
         public bool Splitted { get => splitted; set => splitted = value; }
     }
 }

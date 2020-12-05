@@ -39,7 +39,7 @@ namespace Angon.common.storage
             return instance;
         }
 
-        internal string GetSHAOfExistingOrder(string ip)
+        public string GetSHAOfExistingOrder(string ip)
         {
             var command = connection.CreateCommand();
             command.CommandText = @"SELECT sha FROM orders WHERE ip=$ip;";
@@ -74,14 +74,14 @@ namespace Angon.common.storage
             using (var transaction = connection.BeginTransaction())
             {
                 var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO orders ip, time, size, sha, version, status, created_at VALUES($ip, $time, $size, $sha, $version, $status, $created_at);";
+                command.CommandText = @"INSERT INTO orders (ip, time, size, sha, version, status, created_at) VALUES($ip, $time, $size, $sha, $version, $status, $created_at);";
                 command.Parameters.AddWithValue("$ip", ch.header.ClientIP);
-                command.Parameters.AddWithValue("$time", ch.header.ClientUTCTime);
+                command.Parameters.AddWithValue("$time", new DateTimeOffset(ch.header.ClientUTCTime).ToUnixTimeSeconds());
                 command.Parameters.AddWithValue("$size", ch.header.SizeInBytes);
                 command.Parameters.AddWithValue("$sha", sha);
                 command.Parameters.AddWithValue("$version", ch.header.ClientVersion);
                 command.Parameters.AddWithValue("$status", "just started");
-                command.Parameters.AddWithValue("$created_at", DateTime.UtcNow.ToString());
+                command.Parameters.AddWithValue("$created_at", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
                 command.ExecuteNonQuery();
                 transaction.Commit();
             }
@@ -104,7 +104,7 @@ namespace Angon.common.storage
         public Order GetOldestNotFinishedOrder()
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM orders where time=(SELECT MAX(CAST(time as integer))) FROM orders WHERE status not like 'done');";
+            command.CommandText = @"SELECT * FROM orders where created_at=(SELECT MAX(CAST(created_at as integer))) FROM orders WHERE status not like 'done');";
             using (var reader = command.ExecuteReader())
             {
                 if (reader.Read())

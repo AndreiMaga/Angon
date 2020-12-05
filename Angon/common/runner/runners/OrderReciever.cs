@@ -1,6 +1,7 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
 using Angon.common.headers;
+using Angon.common.storage;
 using Angon.common.utils;
 using System;
 using System.IO;
@@ -50,7 +51,7 @@ namespace Angon.common.runner.runners
 
             Console.WriteLine("Finished writing the zip file!", size);
             // Register order to database
-            // StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
+            StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
         }
     }
 }

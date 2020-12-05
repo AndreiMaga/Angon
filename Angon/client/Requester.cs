@@ -27,7 +27,7 @@ namespace Angon.client
 
             try
             {
-                Directory.Delete(basePath + "\\temp\\exe");
+                Directory.Delete(basePath + "\\temp\\exe", true);
             }
             catch (IOException)
             {
@@ -36,7 +36,7 @@ namespace Angon.client
 
             try
             {
-                Directory.Delete(basePath + "\\temp\\input");
+                Directory.Delete(basePath + "\\temp\\input", true);
             }
             catch (IOException)
             {
@@ -50,6 +50,15 @@ namespace Angon.client
             catch (IOException)
             {
                 // if the directory already exsists, ignore
+            }
+
+            try
+            {
+                File.Delete(basePath + "\\temp.zip");
+            }
+            catch (IOException)
+            {
+                // if the zip already exsists, ignore
             }
 
 
