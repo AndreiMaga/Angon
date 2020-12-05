@@ -3,6 +3,7 @@ using Angon.common.headers;
 using Angon.common.sender;
 using Angon.common.storage;
 using Angon.common.utils;
+using Serilog;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -77,17 +78,20 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ClientHello"/></param>
         public static void Run(GenericHello<ClientHelloHeader> ch)
         {
+            Log.Information("Starting Client Hello Runner");
             bool aproval = DecideAproval(ch.header);
             string sha;
             if (aproval == false)
             {
+                Log.Warning("Order was not approved, fetching already existing sha!");
                 sha = GetExistingSha(ch.header);
             }
             else
             {
                 sha = CreateSha(ch.header);
+                Log.Information("Order was approved, new sha :{0}", sha);
             }
-            
+
 
             // Wrap the ServerHello Header
             WraperHeader wraper = new WraperHeader

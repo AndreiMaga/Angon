@@ -4,6 +4,7 @@ using Angon.common.config;
 using Angon.common.storage;
 using Angon.master.server;
 using CommandLine;
+using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -14,13 +15,15 @@ namespace Angon
     /// </summary>
     class Program
     {
-        
+
         /// <summary>
         /// Main function
         /// </summary>
         /// <param name="args">Command line arguments</param>
         static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.File("log.txt").CreateLogger();
+            Log.Information("Starting with arguments " + string.Join(", ", args));
             CommandLine.Parser.Default.ParseArguments<Options>(args).WithParsed(Run).WithNotParsed(HandleErrors);
         }
 
@@ -57,7 +60,7 @@ namespace Angon
 
             else if (ConfigReader.GetInstance().Config.Type == 1)
             {
-                // TODO client
+                // TODO slave
             }
         }
 
@@ -69,7 +72,7 @@ namespace Angon
         {
             foreach (Error e in errs)
             {
-                // log e
+                Log.Error(e.ToString());
                 Console.WriteLine(e);
             }
         }
@@ -80,7 +83,9 @@ namespace Angon
         /// <param name="options"><see cref="Options"/> parsed arguments from the command line</param>
         static void RunMaster(Options options)
         {
+            Log.Information("Starting as master");
             new Server();
+            Environment.Exit(0);
         }
 
         /// <summary>
@@ -89,7 +94,8 @@ namespace Angon
         /// <param name="options"><see cref="Options"/> parsed arguments from the command line</param>
         static void RunSlave(Options options)
         {
-
+            Log.Information("Starting as slave");
+            Environment.Exit(0);
         }
 
         /// <summary>
@@ -98,7 +104,9 @@ namespace Angon
         /// <param name="options"><see cref="Options"/> parsed arguments from the command line</param>
         static void RunClient(Options options)
         {
+            Log.Information("Starting as client");
             Requester.RunFromFolders(options.PathToExeFolder, options.PathToInputFolder);
+            Environment.Exit(0);
         }
     }
 }

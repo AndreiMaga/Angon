@@ -125,7 +125,7 @@ namespace Angon.common.storage
             command.CommandText = @"SELECT * FROM pool";
             using (var reader = command.ExecuteReader())
             {
-                while(reader.Read())
+                while (reader.Read())
                 {
                     list.Add(new Slave(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2) != 0));
                 }

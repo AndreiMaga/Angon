@@ -3,11 +3,11 @@ using Angon.common.headers;
 using Angon.common.reciever;
 using Angon.common.sender;
 using Angon.common.utils;
+using Serilog;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace Angon.client
 {
@@ -28,6 +28,9 @@ namespace Angon.client
             try
             {
                 Directory.Delete(basePath + "\\temp\\exe", true);
+#if DEBUG
+                Log.Debug("Deleting {0}", basePath + "\\temp\\exe");
+#endif
             }
             catch (IOException)
             {
@@ -37,6 +40,9 @@ namespace Angon.client
             try
             {
                 Directory.Delete(basePath + "\\temp\\input", true);
+#if DEBUG
+                Log.Debug("Deleting {0}", basePath + "\\temp\\input");
+#endif
             }
             catch (IOException)
             {
@@ -55,6 +61,9 @@ namespace Angon.client
             try
             {
                 File.Delete(basePath + "\\temp.zip");
+#if DEBUG
+                Log.Debug("Deleting {0}", basePath + "\\temp.zip");
+#endif
             }
             catch (IOException)
             {
@@ -66,6 +75,7 @@ namespace Angon.client
             IOUtils.DirectoryCopy(inputDirectoryPath, basePath + "\\temp\\input", true);
 
             ZipFile.CreateFromDirectory(basePath + "\\temp", basePath + "\\temp.zip");
+            Log.Information("Created the zip");
 
             SendClientHello(CreateClientHello(basePath + "\\temp.zip"));
         }
@@ -98,8 +108,6 @@ namespace Angon.client
             TcpClient serverConnection = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.Port);
 
             Sender.Send(wraperHeader, serverConnection);
-
-            Console.WriteLine("Starting the listener");
 
             new Reciever().ProcessClient(serverConnection);
 

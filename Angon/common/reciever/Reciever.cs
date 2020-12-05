@@ -2,6 +2,7 @@
 using Angon.common.headers;
 using Angon.common.runner.runners;
 using Angon.common.utils;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -28,13 +29,11 @@ namespace Angon.common.reciever
 
             stream.Read(sizeArray, 0, sizeof(int)); // read the first 4 bytes from the stream
 
-            //if (BitConverter.IsLittleEndian)
-            //    Array.Reverse(sizeArray);
             int size = BitConverter.ToInt32(sizeArray, 0);
             int osize = size;
             int readSize = (int)(size % bytes.Length);
 
-            Console.WriteLine(String.Format("Will recieve {0} bytes!", size));
+            Log.Information("Will recieve {0} bytes!", size);
             while (readSize != 0 && (stream.Read(bytes, 0, readSize)) != 0)
             {
                 data.AddRange(bytes);
@@ -42,7 +41,7 @@ namespace Angon.common.reciever
                 readSize = (int)(size % bytes.Length);
             }
             data.RemoveRange(osize, data.Count - osize);
-            Console.WriteLine("Recieved {0} bytes", data.Count);
+            Log.Information("Recieved {0} bytes", data.Count);
             ProcessData(data, client);
             stream.Close();
             client.Close();

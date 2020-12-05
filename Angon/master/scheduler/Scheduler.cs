@@ -5,7 +5,6 @@ using Angon.common.sender;
 using Angon.common.storage;
 using Angon.common.storage.data;
 using Angon.common.utils;
-using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -43,15 +42,15 @@ namespace Angon.master.scheduler
         public void RunOrder()
         {
             Order orderToRun = StorageProvider.GetInstance().GetOldestNotFinishedOrder();
-            
+
             // the order was not split yet
-            if(orderToRun.Splitted == false)
+            if (orderToRun.Splitted == false)
             {
                 // TODO splitter
             }
 
             SlaveManager(orderToRun);
-            
+
         }
 
         public void SlaveManager(Order orderToRun)

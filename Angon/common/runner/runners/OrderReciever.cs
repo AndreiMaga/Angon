@@ -3,7 +3,7 @@ using Angon.common.config;
 using Angon.common.headers;
 using Angon.common.storage;
 using Angon.common.utils;
-using System;
+using Serilog;
 using System.IO;
 
 namespace Angon.common.runner.runners
@@ -21,6 +21,7 @@ namespace Angon.common.runner.runners
         /// <param name="sha">the sha given to the order</param>
         public static void Recieve(GenericHello<ClientHelloHeader> ch, string sha)
         {
+            Log.Information("Started Order Reciever");
             string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;
             try
             {
@@ -37,7 +38,7 @@ namespace Angon.common.runner.runners
 
             long size = ch.header.SizeInBytes;
 
-            Console.WriteLine("Writing zip file of {0} bytes!", size);
+            Log.Information("Writing zip file of {0} bytes!", size);
 
             while (size > 0)
             {
@@ -49,7 +50,7 @@ namespace Angon.common.runner.runners
                 size -= readTo;
             }
 
-            Console.WriteLine("Finished writing the zip file!", size);
+            Log.Information("Finished writing the zip file to {0}", path);
             // Register order to database
             StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
         }

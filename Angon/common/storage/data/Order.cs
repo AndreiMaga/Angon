@@ -13,7 +13,7 @@ namespace Angon.common.storage.data
         DateTimeOffset created_at;
         bool splitted;
 
-        public Order(string ip, string time, string size, string sha, string version, string status, string created_at,int splitted)
+        public Order(string ip, string time, string size, string sha, string version, string status, string created_at, int splitted)
         {
             this.Ip = ip;
             this.Time = time;

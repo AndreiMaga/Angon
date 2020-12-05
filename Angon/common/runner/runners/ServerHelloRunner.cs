@@ -1,7 +1,7 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
 using Angon.common.headers;
-using System;
+using Serilog;
 using System.IO;
 
 namespace Angon.common.runner.runners
@@ -18,10 +18,11 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ServerHello"/> containing all the necessary information</param>
         public static void Run(GenericHello<ServerHelloHeader> ch)
         {
-
+            Log.Information("Started Server Hello Runner");
             if (!ch.header.AcceptedRequest)
             {
                 // there is one pending, check status
+                Log.Warning("Client already has order with sha:{0}", ch.header.Sha);
                 return;
             }
 
@@ -35,8 +36,8 @@ namespace Angon.common.runner.runners
                 ConfigReader.GetInstance().Config.WriteSize :
                 (int)size;
 
-            Console.WriteLine("Recieved sha {0}!", ch.header.Sha);
-            Console.WriteLine("Will send {0} bytes!", size);
+            Log.Information("Recieved sha {0}!", ch.header.Sha);
+            Log.Information("Will send {0} bytes!", size);
 
             byte[] byteArray = new byte[readSize];
             FileStream fs = File.OpenRead(path);

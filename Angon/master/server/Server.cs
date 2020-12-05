@@ -1,5 +1,6 @@
 ﻿using Angon.common.config;
 using Angon.common.reciever;
+using Serilog;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -24,6 +25,7 @@ namespace Angon.master.server
         {
             try
             {
+                Log.Information("Starting the server.");
                 ListeningServer = new TcpListener(
                     IPAddress.Parse(ConfigReader.GetInstance().Config.Ip),
                     ConfigReader.GetInstance().Config.Port);
@@ -31,6 +33,7 @@ namespace Angon.master.server
                 while (true)
                 {
                     TcpClient client = ListeningServer.AcceptTcpClient();
+                    Log.Information("Accepted TCP connection.");
                     Task task = new Task(() =>
                     {
                         new Reciever().ProcessClient(client);

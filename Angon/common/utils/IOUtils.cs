@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Serilog;
+using System.IO;
 
 namespace Angon.common.utils
 {
@@ -20,6 +21,7 @@ namespace Angon.common.utils
 
             if (!dir.Exists)
             {
+                Log.Error("Could not copy {0} to {1}", sourceDirName, destDirName);
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: "
                     + sourceDirName);
