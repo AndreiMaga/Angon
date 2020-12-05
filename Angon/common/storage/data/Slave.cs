@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Angon.common.storage.data
+﻿namespace Angon.common.storage.data
 {
     class Slave
     {
         string ip;
         int port;
         bool availableForWork;
+
+        public Slave(string ip, int port, bool availableForWork)
+        {
+            Ip = ip;
+            Port = port;
+            AvailableForWork = availableForWork;
+        }
 
         public string Ip { get => ip; set => ip = value; }
         public int Port { get => port; set => port = value; }

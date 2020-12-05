@@ -77,10 +77,6 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ClientHello"/></param>
         public static void Run(GenericHello<ClientHelloHeader> ch)
         {
-
-            bool aproval = true;
-            string sha = CreateSha(ch.header);
-            /* SKIP FOR NOW 
             bool aproval = DecideAproval(ch.header);
             string sha;
             if (aproval == false)
@@ -91,7 +87,7 @@ namespace Angon.common.runner.runners
             {
                 sha = CreateSha(ch.header);
             }
-            */
+            
 
             // Wrap the ServerHello Header
             WraperHeader wraper = new WraperHeader
@@ -103,21 +99,11 @@ namespace Angon.common.runner.runners
             Sender.Send(wraper, ch.Client);
 
             // Wait for the orderpost
-            if (aproval == false)
-            {
-                ContinueExisting(ch);
-            }
-            else
+            if (aproval == true)
             {
                 OrderReciever.Recieve(ch, sha);
             }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ch"></param>
-        public static void ContinueExisting(GenericHello<ClientHelloHeader> ch)
-        {
+            // If aproval is false, the connection will close
 
         }
 

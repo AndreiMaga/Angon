@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 
 ///////////////////////////////////////////
-/// WORK IN PROGRESS, JUST PROTOTYPING  ///
+///      THIS NEEDS OPTIMIZATIONS       ///
 ///////////////////////////////////////////
 
 namespace Angon.common.storage
@@ -42,7 +42,7 @@ namespace Angon.common.storage
         internal string GetSHAOfExistingOrder(string ip)
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT sha FROM orders WHERE ip=$ip";
+            command.CommandText = @"SELECT sha FROM orders WHERE ip=$ip;";
             command.Parameters.AddWithValue("$ip", ip);
             using (var reader = command.ExecuteReader())
             {
@@ -57,7 +57,7 @@ namespace Angon.common.storage
         public Boolean ClientHasOrder(string ip)
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM orders WHERE ip=$ip and status not like 'done'";
+            command.CommandText = @"SELECT id FROM orders WHERE ip=$ip and status not like 'done';";
             command.Parameters.AddWithValue("$ip", ip);
             using (var reader = command.ExecuteReader())
             {
@@ -74,7 +74,7 @@ namespace Angon.common.storage
             using (var transaction = connection.BeginTransaction())
             {
                 var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO orders ip, time, size, sha, version, status, created_at VALUES($ip, $time, $size, $sha, $version, $status, $$created_at);";
+                command.CommandText = @"INSERT INTO orders ip, time, size, sha, version, status, created_at VALUES($ip, $time, $size, $sha, $version, $status, $created_at);";
                 command.Parameters.AddWithValue("$ip", ch.header.ClientIP);
                 command.Parameters.AddWithValue("$time", ch.header.ClientUTCTime);
                 command.Parameters.AddWithValue("$size", ch.header.SizeInBytes);
@@ -90,7 +90,7 @@ namespace Angon.common.storage
         public int NumberOfJobsToBeDone()
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT count(status) FROM orders WHERE status not like 'done'";
+            command.CommandText = @"SELECT count(status) FROM orders WHERE status not like 'done';";
             using (var reader = command.ExecuteReader())
             {
                 if (reader.Read())
@@ -103,12 +103,34 @@ namespace Angon.common.storage
 
         public Order GetOldestNotFinishedOrder()
         {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM orders where time=(SELECT MAX(CAST(time as integer))) FROM orders WHERE status not like 'done');";
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return new Order(reader.GetString(0), reader.GetString(1),
+                                     reader.GetString(2), reader.GetString(3),
+                                     reader.GetString(4), reader.GetString(5),
+                                     reader.GetString(6), reader.GetInt32(7));
+                }
+            }
             return null;
         }
 
         public List<Slave> GetSlaves()
         {
-            return null;
+            List<Slave> list = new List<Slave>();
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM pool";
+            using (var reader = command.ExecuteReader())
+            {
+                while(reader.Read())
+                {
+                    list.Add(new Slave(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2) != 0));
+                }
+            }
+            return list;
         }
 
     }

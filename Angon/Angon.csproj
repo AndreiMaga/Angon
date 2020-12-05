@@ -113,9 +113,13 @@
     <Compile Include="common\config\Config.cs" />
     <Compile Include="common\config\ConfigReader.cs" />
     <Compile Include="common\headers\ClientHelloHeader.cs" />
+    <Compile Include="common\headers\ServerAvailableHeader.cs" />
     <Compile Include="common\headers\ServerHelloHeader.cs" />
     <Compile Include="common\headers\WraperHeader.cs" />
     <Compile Include="common\runner\runners\ServerHelloRunner.cs" />
+    <Compile Include="common\sender\Sender.cs" />
+    <Compile Include="common\storage\data\Order.cs" />
+    <Compile Include="common\storage\data\Slave.cs" />
     <Compile Include="common\utils\ByteArrayUtils.cs" />
     <Compile Include="common\utils\IOUtils.cs" />
     <Compile Include="common\utils\Networking.cs" />
@@ -123,8 +127,8 @@
     <Compile Include="common\runner\runners\OrderReciever.cs" />
     <Compile Include="common\runner\runners\Runner.cs" />
     <Compile Include="common\reciever\Reciever.cs" />
+    <Compile Include="master\scheduler\Scheduler.cs" />
     <Compile Include="master\server\Server.cs" />
-    <Compile Include="common\storage\data\Client.cs" />
     <Compile Include="common\storage\StorageProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

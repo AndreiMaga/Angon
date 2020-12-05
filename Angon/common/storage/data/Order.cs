@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Angon.common.storage.data
 {
@@ -17,16 +13,16 @@ namespace Angon.common.storage.data
         DateTime created_at;
         bool splitted;
 
-        public Order(string ip, string time, int size, string sha, string version, string status, string created_at,bool splitted)
+        public Order(string ip, string time, string size, string sha, string version, string status, string created_at,int splitted)
         {
             this.Ip = ip;
             this.Time = time;
-            this.Size = size;
+            this.Size = int.Parse(size);
             this.Sha = sha;
             this.Version = version;
             this.Status = status;
             this.Created_at = DateTime.Parse(created_at);
-            this.Splitted = splitted;
+            this.Splitted = splitted != 0;
         }
 
         public string Ip { get => ip; set => ip = value; }

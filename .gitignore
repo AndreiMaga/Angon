@@ -351,3 +351,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Storing the storage.db in the main folder as the one that gets copied might change a lot
+*/storage.db
