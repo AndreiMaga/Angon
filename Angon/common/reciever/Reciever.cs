@@ -20,28 +20,22 @@ namespace Angon.common.reciever
         /// <param name="client">the client to recieve data from</param>
         public void ProcessClient(TcpClient client)
         {
-            byte[] bytes = new byte[512];
             List<byte> data = new List<byte>();
 
             NetworkStream stream = client.GetStream();
 
-            byte[] sizeArray = new byte[sizeof(int)]; // read a long that denotes the size of the size to read
+            byte[] sizeArray = new byte[sizeof(int)];
 
-            stream.Read(sizeArray, 0, sizeof(int)); // read the first 4 bytes from the stream
+            stream.Read(sizeArray, 0, sizeof(int));
 
             int size = BitConverter.ToInt32(sizeArray, 0);
-            int osize = size;
-            int readSize = (int)(size % bytes.Length);
+            byte[] bytes = new byte[size];
 
             Log.Information("Will recieve {0} bytes!", size);
-            while (readSize != 0 && (stream.Read(bytes, 0, readSize)) != 0)
-            {
-                data.AddRange(bytes);
-                size -= readSize;
-                readSize = (int)(size % bytes.Length);
-            }
-            data.RemoveRange(osize, data.Count - osize);
+            stream.Read(bytes, 0, size);
+            data.AddRange(bytes);
             Log.Information("Recieved {0} bytes", data.Count);
+
             ProcessData(data, client);
             stream.Close();
             client.Close();

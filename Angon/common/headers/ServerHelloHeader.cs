@@ -19,6 +19,8 @@ namespace Angon.common.headers
         /// </summary>
         public string Sha { get; set; }
 
+        public string Message { get; set; }
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -31,6 +33,7 @@ namespace Angon.common.headers
         {
             AcceptedRequest = (bool)info.GetValue("AcceptedRequest", typeof(bool));
             Sha = (string)info.GetValue("Sha", typeof(string));
+            Message = (string)info.GetValue("Message", typeof(string));
         }
 
         /// <summary>
@@ -40,6 +43,7 @@ namespace Angon.common.headers
         {
             info.AddValue("AcceptedRequest", AcceptedRequest, typeof(bool));
             info.AddValue("Sha", Sha, typeof(string));
+            info.AddValue("Message", Message, typeof(string));
         }
     }
 }

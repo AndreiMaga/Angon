@@ -1,6 +1,7 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.config;
 using Angon.common.headers;
+using Angon.common.storage;
 using Serilog;
 using System.IO;
 
@@ -18,12 +19,19 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ServerHello"/> containing all the necessary information</param>
         public static void Run(GenericHello<ServerHelloHeader> ch)
         {
-            Log.Information("Started Server Hello Runner");
             if (!ch.header.AcceptedRequest)
             {
                 // there is one pending, check status
-                Log.Warning("Client already has order with sha:{0}", ch.header.Sha);
+                Log.Warning(ch.header.Message);
+                StorageProvider.GetInstance().DeleteLatestClientOrder();
                 return;
+            }
+
+            if (ch.header.Message.Contains("Token:"))
+            {
+                // the server generated a new token for the client
+                // store it in the database
+                StorageProvider.GetInstance().RegisterClientToken("localhost", ch.header.Message.Split(':')[1]);
             }
 
             // if the order request was accepted
@@ -49,6 +57,7 @@ namespace Angon.common.runner.runners
             }
 
             // Done, now register the sha to the local database for future operations
+            StorageProvider.GetInstance().UpdateSha(ch.header.Sha);
         }
     }
 }

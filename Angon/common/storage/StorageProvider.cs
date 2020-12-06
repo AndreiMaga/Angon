@@ -122,7 +122,7 @@ namespace Angon.common.storage
         {
             List<Slave> list = new List<Slave>();
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM pool";
+            command.CommandText = @"SELECT * FROM pool;";
             using (var reader = command.ExecuteReader())
             {
                 while (reader.Read())
@@ -133,5 +133,84 @@ namespace Angon.common.storage
             return list;
         }
 
+        public bool ClientHasToken(string ip)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT ip FROM clients WHERE ip=$ip;";
+            command.Parameters.AddWithValue("$ip", ip);
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool ClientHasThisToken(string ip, string token)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT token FROM clients WHERE ip=$ip;";
+            command.Parameters.AddWithValue("$ip", ip);
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return reader.GetString(0).Equals(token);
+                }
+            }
+            return false;
+        }
+        
+        public void RegisterClientToken(string ip, string token)
+        {
+            using (var transaction = connection.BeginTransaction())
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = @"INSERT INTO clients (ip, token) VALUES($ip,$token);";
+                command.Parameters.AddWithValue("$ip", ip);
+                command.Parameters.AddWithValue("$token", token);
+                command.ExecuteNonQuery();
+                transaction.Commit();
+            }
+        }
+    
+        public void UpdateSha(string sha)
+        {
+            using (var transaction = connection.BeginTransaction())
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = "UPDATE orders SET sha=$sha WHERE id=(select seq from sqlite_sequence where name=\"orders\");";
+                command.Parameters.AddWithValue("sha", sha);
+                command.ExecuteNonQuery();
+                transaction.Commit();
+            }
+        }
+
+        public void DeleteLatestClientOrder()
+        {
+            using (var transaction = connection.BeginTransaction())
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM orders WHERE id=(select seq from sqlite_sequence where name=\"orders\");";
+                command.ExecuteNonQuery();
+                transaction.Commit();
+            }
+        }
+
+        public string GetClientsToken()
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT token FROM clients WHERE ip like 'localhost'";
+            using (var reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    return reader.GetString(0);
+                }
+            }
+            return "";
+        }
     }
 }

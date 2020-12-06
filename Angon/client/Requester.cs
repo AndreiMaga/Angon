@@ -1,7 +1,9 @@
-﻿using Angon.common.config;
+﻿using Angon.common.comprotocols.requests;
+using Angon.common.config;
 using Angon.common.headers;
 using Angon.common.reciever;
 using Angon.common.sender;
+using Angon.common.storage;
 using Angon.common.utils;
 using Serilog;
 using System;
@@ -90,7 +92,8 @@ namespace Angon.client
             ClientUTCTime = DateTime.UtcNow,
             ClientIP = ConfigReader.GetInstance().Config.PredefinedIP == "" ? Networking.GetIPAddress() : ConfigReader.GetInstance().Config.PredefinedIP,
             ClientVersion = ConfigReader.GetInstance().Config.Version,
-            SizeInBytes = new FileInfo(path).Length
+            SizeInBytes = new FileInfo(path).Length,
+            ClientToken = StorageProvider.GetInstance().GetClientsToken()
         };
 
         /// <summary>
@@ -99,11 +102,15 @@ namespace Angon.client
         /// <param name="chh">The header to be sent</param>
         public static void SendClientHello(ClientHelloHeader chh)
         {
+            GenericHello<ClientHelloHeader> gh = new GenericHello<ClientHelloHeader>(ByteArrayUtils.ToByteArray(chh));
+
             WraperHeader wraperHeader = new WraperHeader
             {
                 Type = 'C',
-                Data = ByteArrayUtils.ToByteArray(chh)
+                Data = gh.Data
             };
+
+            StorageProvider.GetInstance().ClientRegisteredOrder(gh, "");
 
             TcpClient serverConnection = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.Port);
 

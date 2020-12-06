@@ -10,12 +10,13 @@ namespace Angon.common.headers
         string clientIP;
         long sizeInBytes;
         string clientVersion;
+        string clientToken;
 
         public DateTime ClientUTCTime { get => clientUTCTime; set => clientUTCTime = value; }
         public string ClientIP { get => clientIP; set => clientIP = value; }
         public long SizeInBytes { get => sizeInBytes; set => sizeInBytes = value; }
         public string ClientVersion { get => clientVersion; set => clientVersion = value; }
-
+        public string ClientToken { get => clientToken; set => clientToken = value; }
 
         public ClientHelloHeader() { }
         public ClientHelloHeader(SerializationInfo info, StreamingContext context)
@@ -24,6 +25,7 @@ namespace Angon.common.headers
             clientIP = (string)info.GetValue("ClientIP", typeof(string));
             sizeInBytes = (long)info.GetValue("SizeInBytes", typeof(long));
             clientVersion = (string)info.GetValue("ClientVersion", typeof(string));
+            clientToken = (string)info.GetValue("ClientToken", typeof(string));
 
 
         }
@@ -33,6 +35,7 @@ namespace Angon.common.headers
             info.AddValue("ClientIP", ClientIP, typeof(string));
             info.AddValue("SizeInBytes", SizeInBytes, typeof(long));
             info.AddValue("ClientVersion", ClientVersion, typeof(string));
+            info.AddValue("ClientToken", ClientToken, typeof(string));
         }
     }
 }

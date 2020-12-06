@@ -4,7 +4,9 @@ using Angon.common.headers;
 using Angon.common.storage;
 using Angon.common.utils;
 using Serilog;
+using System;
 using System.IO;
+using System.Threading;
 
 namespace Angon.common.runner.runners
 {
@@ -21,7 +23,6 @@ namespace Angon.common.runner.runners
         /// <param name="sha">the sha given to the order</param>
         public static void Recieve(GenericHello<ClientHelloHeader> ch, string sha)
         {
-            Log.Information("Started Order Reciever");
             string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;
             try
             {
@@ -43,7 +44,16 @@ namespace Angon.common.runner.runners
             while (size > 0)
             {
                 int readTo = size > dataArray.Length ? dataArray.Length : (int)size;
-                ch.Client.GetStream().Read(dataArray, 0, readTo);
+                try
+                {
+                    ch.Client.GetStream().Read(dataArray, 0, readTo);
+                }
+                catch (Exception)
+                {
+                    Log.Warning("The server lost connection with the client, aborting!");
+                    CleanUp(path);
+                    return;
+                }
 
                 ByteArrayUtils.ByteArrayToFile(dataArray, path + "\\temp.zip"); // write data array to temp file
 
@@ -53,6 +63,15 @@ namespace Angon.common.runner.runners
             Log.Information("Finished writing the zip file to {0}", path);
             // Register order to database
             StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
+        }
+
+        private static void CleanUp(string path)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (IOException) { }
         }
     }
 }

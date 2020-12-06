@@ -1,4 +1,5 @@
-﻿using Angon.common.comprotocols.requests;
+﻿using Angon.common.auth;
+using Angon.common.comprotocols.requests;
 using Angon.common.headers;
 using Angon.common.sender;
 using Angon.common.storage;
@@ -56,10 +57,11 @@ namespace Angon.common.runner.runners
         /// <param name="aproval">can the client start place a new order</param>
         /// <param name="sha">the sha of the order, the new or old one</param>
         /// <returns></returns>
-        private static ServerHelloHeader CreateServerHelloHeader(bool aproval, string sha) => new ServerHelloHeader
+        private static ServerHelloHeader CreateServerHelloHeader(bool aproval, string sha, string message) => new ServerHelloHeader
         {
             AcceptedRequest = aproval,
-            Sha = sha
+            Sha = sha,
+            Message = message
         };
 
         /// <summary>
@@ -78,26 +80,36 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ClientHello"/></param>
         public static void Run(GenericHello<ClientHelloHeader> ch)
         {
-            Log.Information("Starting Client Hello Runner");
-            bool aproval = DecideAproval(ch.header);
-            string sha;
-            if (aproval == false)
+            Tuple<string, bool> auth = Authentification.AuthenticateClient(ch.header.ClientIP, ch.header.ClientToken);
+            string sha = "";
+            bool aproval = false;
+            if (auth.Item2 == true)
             {
-                Log.Warning("Order was not approved, fetching already existing sha!");
-                sha = GetExistingSha(ch.header);
-            }
-            else
-            {
-                sha = CreateSha(ch.header);
-                Log.Information("Order was approved, new sha :{0}", sha);
+                aproval = DecideAproval(ch.header);
+
+                if (aproval == false)
+                {
+                    Log.Warning("Order was not approved, fetching already existing sha!");
+                    sha = GetExistingSha(ch.header);
+                    auth = new Tuple<string, bool>("Error: Existing order with sha:"+sha,false);
+                }
+                else
+                {
+                    sha = CreateSha(ch.header);
+                    Log.Information("Order was approved, new sha :{0}", sha);
+                }
             }
 
+            if (auth.Item1.Contains("Token:"))
+            {
+                StorageProvider.GetInstance().RegisterClientToken(ch.header.ClientIP, auth.Item1.Split(':')[1]);
+            }
 
             // Wrap the ServerHello Header
             WraperHeader wraper = new WraperHeader
             {
                 Type = 'S',
-                Data = ByteArrayUtils.ToByteArray(CreateServerHelloHeader(aproval, sha))
+                Data = ByteArrayUtils.ToByteArray(CreateServerHelloHeader(aproval, sha, auth.Item1))
             };
 
             Sender.Send(wraper, ch.Client);
