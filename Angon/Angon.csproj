@@ -115,6 +115,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="common\auth\Authentification.cs" />
     <Compile Include="common\cmd\Options.cs" />
     <Compile Include="common\comprotocols\Request.cs" />
     <Compile Include="common\comprotocols\RequestFactory.cs" />
