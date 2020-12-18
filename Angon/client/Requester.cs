@@ -25,13 +25,13 @@ namespace Angon.client
         /// <param name="inputDirectoryPath">The path to the input directory</param>
         public static void RunFromFolders(string exeDirectoryPath, string inputDirectoryPath)
         {
-            string basePath = ConfigReader.GetInstance().Config.SavePath + "\\zipToSend";
+            string basePath = Path.Combine(ConfigReader.GetInstance().Config.SavePath, "zipToSend");
 
             try
             {
-                Directory.Delete(basePath + "\\temp\\exe", true);
+                Directory.Delete(Path.Combine(basePath,"temp","exe"), true);
 #if DEBUG
-                Log.Debug("Deleting {0}", basePath + "\\temp\\exe");
+                Log.Debug("Deleting {0}", Path.Combine(basePath, "temp", "exe"));
 #endif
             }
             catch (IOException)
@@ -41,9 +41,9 @@ namespace Angon.client
 
             try
             {
-                Directory.Delete(basePath + "\\temp\\input", true);
+                Directory.Delete(Path.Combine(basePath, "temp", "input"), true);
 #if DEBUG
-                Log.Debug("Deleting {0}", basePath + "\\temp\\input");
+                Log.Debug("Deleting {0}", Path.Combine(basePath, "temp", "input"));
 #endif
             }
             catch (IOException)
@@ -53,7 +53,7 @@ namespace Angon.client
 
             try
             {
-                Directory.CreateDirectory(basePath + "\\temp");
+                Directory.CreateDirectory(Path.Combine(basePath, "temp"));
             }
             catch (IOException)
             {
@@ -62,9 +62,9 @@ namespace Angon.client
 
             try
             {
-                File.Delete(basePath + "\\temp.zip");
+                File.Delete(Path.Combine(basePath, "temp.zip"));
 #if DEBUG
-                Log.Debug("Deleting {0}", basePath + "\\temp.zip");
+                Log.Debug("Deleting {0}", Path.Combine(basePath, "temp.zip"));
 #endif
             }
             catch (IOException)
@@ -73,13 +73,13 @@ namespace Angon.client
             }
 
 
-            IOUtils.DirectoryCopy(exeDirectoryPath, basePath + "\\temp\\exe", true);
-            IOUtils.DirectoryCopy(inputDirectoryPath, basePath + "\\temp\\input", true);
+            IOUtils.DirectoryCopy(exeDirectoryPath, Path.Combine(basePath, "temp", "exe"), true);
+            IOUtils.DirectoryCopy(inputDirectoryPath, Path.Combine(basePath, "temp", "input"), true);
 
-            ZipFile.CreateFromDirectory(basePath + "\\temp", basePath + "\\temp.zip");
+            ZipFile.CreateFromDirectory(Path.Combine(basePath, "temp"), Path.Combine(basePath, "temp.zip"));
             Log.Information("Created the zip");
 
-            SendClientHello(CreateClientHello(basePath + "\\temp.zip"));
+            SendClientHello(CreateClientHello(Path.Combine(basePath, "temp.zip")));
         }
 
         /// <summary>
