@@ -138,9 +138,11 @@
     <Compile Include="common\runner\runners\Runner.cs" />
     <Compile Include="common\reciever\Reciever.cs" />
     <Compile Include="common\utils\SecurityUtils.cs" />
+    <Compile Include="master\scheduler\OrderConfig.cs" />
     <Compile Include="master\scheduler\Scheduler.cs" />
     <Compile Include="master\server\Server.cs" />
     <Compile Include="common\storage\StorageProvider.cs" />
+    <Compile Include="master\splitter\Splitter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="client\Requester.cs" />
@@ -156,7 +158,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="master\splitter\" />
     <Folder Include="slave\client\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
