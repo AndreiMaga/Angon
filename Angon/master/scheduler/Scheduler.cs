@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace Angon.master.scheduler
 {
     class Scheduler
     {
+        public static JobsConfig JobsConfig { get; private set; }
+
         public Scheduler()
         {
             Task t = new Task(() =>
@@ -67,9 +70,8 @@ namespace Angon.master.scheduler
 
             // Create JSON with the jobs, will store them inside database after the order is finished
 
-            JobsConfig jobsConfig = GetJobsConfig(orderToRun);
 
-            SlaveManager(orderToRun, orderConfig, jobsConfig);
+            SlaveManager(orderToRun, orderConfig);
 
         }
 
@@ -87,7 +89,8 @@ namespace Angon.master.scheduler
 
         private JobsConfig CreateJobsConfig(Order order) => new JobsConfig
         {
-            Jobs = new List<string>(Directory.GetDirectories(Path.Combine(GetOrderPath(order), "unzip", "input", "jobs")))
+            Jobs = new List<string>(Directory.GetDirectories(Path.Combine(GetOrderPath(order), "unzip", "input", "jobs"))),
+            FinishedJobs = new List<string>()
         };
 
         private string GetOrderPath(Order order)
@@ -114,23 +117,54 @@ namespace Angon.master.scheduler
             }
         }
 
-        public void SlaveManager(Order order, OrderConfig orderConfig, JobsConfig jobsConfig)
+        public void SlaveManager(Order order, OrderConfig orderConfig)
         {
-            List<Slave> listofSlaves = CheckWhichSlavesAreAvailable();
-            // TODO : Send jobs to the ones that are available for work
-            // The response will come to the server as a "Result" request
-            // TODO : Wait for all the jobs to finish, check if a job is hanged or still running on the client
-            // and take action
-            // TODO : while waiting, update the slaves list
+            // expose JobsConfig so the runner for result can finish jobs
+            JobsConfig = GetJobsConfig(order);
+
+            List<Slave> listOfSlaves = CheckWhichSlavesAreAvailable();
+            while(JobsConfig.FinishedJobs.Count != JobsConfig.numberOfJobs)
+            {
+                // if jobs are pending to be sent
+                if(JobsConfig.Jobs.Count != 0)
+                {
+                    foreach (Slave slave in listOfSlaves)
+                    {
+                        SendJob(slave);
+                        // if all jobs were sent
+                        if (JobsConfig.Jobs.Count == 0)
+                            break;
+                    }
+                }
+                // The response will come to the server as a "Result" request
+
+                List<Slave> updatedlistOfSlaves = CheckWhichSlavesAreAvailable();
+                foreach(Slave slave in listOfSlaves)
+                {
+                    // if the slave had a job and it's not on the new list
+                    if (slave.HasJob && !updatedlistOfSlaves.Any(ns => ns.UniqueToken.Equals(slave.UniqueToken)))
+                    {
+                        JobsConfig.SentJobs.Remove(slave.AssignedJob);
+                        JobsConfig.Jobs.Add(slave.AssignedJob); // to be reassigned
+                    }
+                }
+                listOfSlaves = updatedlistOfSlaves;
+                Task.Delay(ConfigReader.GetInstance().Config.MilisecondsToSleep);
+            }
             // if all jobs are completed mark the order as done on the database and concat the results
             // might be able to have people create their own merger tool that get's uploaded with the exe
+        }
+
+        private void SendJob(Slave slave)
+        {
+            // TODO : Send jobs to slaves
         }
 
         public List<Slave> CheckWhichSlavesAreAvailable()
         {
             StorageProvider.GetInstance().GetSlaves().ForEach(CheckerStart); // this will change the list
 
-            return StorageProvider.GetInstance().GetSlaves().FindAll(s => s.AvailableForWork);
+            return StorageProvider.GetInstance().GetSlaves().FindAll(s => s.AvailableForWork != 2);
 
         }
 

@@ -127,7 +127,7 @@ namespace Angon.common.storage
             {
                 while (reader.Read())
                 {
-                    list.Add(new Slave(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2) != 0));
+                    list.Add(new Slave(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetString(3)));
                 }
             }
             return list;
