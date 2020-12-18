@@ -138,6 +138,7 @@
     <Compile Include="common\runner\runners\Runner.cs" />
     <Compile Include="common\reciever\Reciever.cs" />
     <Compile Include="common\utils\SecurityUtils.cs" />
+    <Compile Include="master\scheduler\JobsConfig.cs" />
     <Compile Include="master\scheduler\OrderConfig.cs" />
     <Compile Include="master\scheduler\Scheduler.cs" />
     <Compile Include="master\server\Server.cs" />

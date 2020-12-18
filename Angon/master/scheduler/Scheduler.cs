@@ -5,8 +5,13 @@ using Angon.common.sender;
 using Angon.common.storage;
 using Angon.common.storage.data;
 using Angon.common.utils;
+using Angon.master.splitter;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Angon.master.scheduler
@@ -38,22 +43,78 @@ namespace Angon.master.scheduler
             }
         }
 
-
         public void RunOrder()
         {
             Order orderToRun = StorageProvider.GetInstance().GetOldestNotFinishedOrder();
 
-            // the order was not split yet
-            if (orderToRun.Splitted == false)
+            UnzipOrder(orderToRun);
+            OrderConfig orderConfig = GetOrderConfig(orderToRun);
+
+            if (orderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
+                File.Delete(Path.Combine(GetOrderPath(orderToRun),"temp.zip"));
+
+            if (orderConfig.ShouldBeSplit == true && orderToRun.Splitted == false)
             {
-                // TODO splitter
+                new Splitter(orderToRun, orderConfig).Split();
+
+                if (Splitter.MaliciousReturn)
+                {
+                    // TODO
+                    Splitter.MaliciousReturn = false;
+                    return; // Untill this is done, all malicious runs will end up in an infinite loop
+                }
             }
 
-            SlaveManager(orderToRun);
+            // Create JSON with the jobs, will store them inside database after the order is finished
+
+            JobsConfig jobsConfig = GetJobsConfig(orderToRun);
+
+            SlaveManager(orderToRun, orderConfig, jobsConfig);
 
         }
 
-        public void SlaveManager(Order orderToRun)
+        private JobsConfig GetJobsConfig(Order order)
+        {
+            string path = Path.Combine(GetOrderPath(order), "unzip", "jobconfig.json");
+            if (File.Exists(path))
+            {
+                return JsonSerializer.Deserialize<JobsConfig>(File.ReadAllText(path));
+            }
+            JobsConfig jobsConfig = CreateJobsConfig(order);
+            File.WriteAllText(path, JsonSerializer.Serialize(jobsConfig));
+            return jobsConfig;
+        }
+
+        private JobsConfig CreateJobsConfig(Order order) => new JobsConfig
+        {
+            Jobs = new List<string>(Directory.GetDirectories(Path.Combine(GetOrderPath(order), "unzip", "input", "jobs")))
+        };
+
+        private string GetOrderPath(Order order)
+        {
+            return Path.Combine(ConfigReader.GetInstance().Config.SavePath, order.Sha);
+        }
+
+        private OrderConfig GetOrderConfig(Order orderToRun)
+        {
+            return JsonSerializer.Deserialize<OrderConfig>(File.ReadAllText(Path.Combine(GetOrderPath(orderToRun) + "unzip","exe","orderconfig.json")));
+        }
+        
+        private void UnzipOrder(Order order)
+        {
+            try
+            {
+                string path = GetOrderPath(order);
+                ZipFile.ExtractToDirectory(Path.Combine(path, "temp.zip"), Path.Combine(path + "unzip"));
+
+            }
+            catch (IOException)
+            {
+                // already unzipped
+            }
+        }
+
+        public void SlaveManager(Order order, OrderConfig orderConfig, JobsConfig jobsConfig)
         {
             List<Slave> listofSlaves = CheckWhichSlavesAreAvailable();
             // TODO : Send jobs to the ones that are available for work
