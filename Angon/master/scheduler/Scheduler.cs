@@ -21,6 +21,11 @@ namespace Angon.master.scheduler
     {
         public static JobsConfig JobsConfig { get; private set; }
 
+        private Order Order { get; set; }
+        private OrderConfig OrderConfig { get; set; }
+
+        private string GetOrderPath { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha); }
+
         public Scheduler()
         {
             Task t = new Task(() =>
@@ -48,17 +53,17 @@ namespace Angon.master.scheduler
 
         public void RunOrder()
         {
-            Order orderToRun = StorageProvider.GetInstance().GetOldestNotFinishedOrder();
+            Order = StorageProvider.GetInstance().GetOldestNotFinishedOrder();
 
-            UnzipOrder(orderToRun);
-            OrderConfig orderConfig = GetOrderConfig(orderToRun);
+            UnzipOrder();
+            GetOrderConfig();
 
-            if (orderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
-                File.Delete(Path.Combine(GetOrderPath(orderToRun),"temp.zip"));
+            if (OrderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
+                File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
-            if (orderConfig.ShouldBeSplit == true && orderToRun.Splitted == false)
+            if (OrderConfig.ShouldBeSplit == true && Order.Splitted == false)
             {
-                new Splitter(orderToRun, orderConfig).Split();
+                new Splitter(Order, OrderConfig).Split();
 
                 if (Splitter.MaliciousReturn)
                 {
@@ -68,47 +73,50 @@ namespace Angon.master.scheduler
                 }
             }
 
-            // Create JSON with the jobs, will store them inside database after the order is finished
-
-
-            SlaveManager(orderToRun, orderConfig);
+            SlaveManager();
 
         }
 
-        private JobsConfig GetJobsConfig(Order order)
+        private JobsConfig GetJobsConfig()
         {
-            string path = Path.Combine(GetOrderPath(order), "unzip", "jobconfig.json");
+            string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
             if (File.Exists(path))
             {
                 return JsonSerializer.Deserialize<JobsConfig>(File.ReadAllText(path));
             }
-            JobsConfig jobsConfig = CreateJobsConfig(order);
+            JobsConfig jobsConfig = CreateJobsConfig();
             File.WriteAllText(path, JsonSerializer.Serialize(jobsConfig));
             return jobsConfig;
         }
 
-        private JobsConfig CreateJobsConfig(Order order) => new JobsConfig
+        private JobsConfig CreateJobsConfig()
         {
-            Jobs = new List<string>(Directory.GetDirectories(Path.Combine(GetOrderPath(order), "unzip", "input", "jobs"))),
-            FinishedJobs = new List<string>()
-        };
-
-        private string GetOrderPath(Order order)
-        {
-            return Path.Combine(ConfigReader.GetInstance().Config.SavePath, order.Sha);
+            var jobs = new List<string>(Directory.GetDirectories(Path.Combine(GetOrderPath, "unzip", "input", "jobs")));
+            return new JobsConfig
+            {
+                Jobs = jobs,
+                FinishedJobs = new List<string>(),
+                numberOfJobs = jobs.Count,
+                SentJobs = new List<string>()
+            };
         }
 
-        private OrderConfig GetOrderConfig(Order orderToRun)
+        private void SaveStateOfJobsConfig()
         {
-            return JsonSerializer.Deserialize<OrderConfig>(File.ReadAllText(Path.Combine(GetOrderPath(orderToRun) + "unzip","exe","orderconfig.json")));
+            File.WriteAllText(Path.Combine(GetOrderPath, "unzip", "jobconfig.json"), JsonSerializer.Serialize(JobsConfig));
         }
-        
-        private void UnzipOrder(Order order)
+
+
+        private void GetOrderConfig()
+        {
+            OrderConfig = JsonSerializer.Deserialize<OrderConfig>(File.ReadAllText(Path.Combine(GetOrderPath, "unzip", "exe", "orderconfig.json")));
+        }
+
+        private void UnzipOrder()
         {
             try
             {
-                string path = GetOrderPath(order);
-                ZipFile.ExtractToDirectory(Path.Combine(path, "temp.zip"), Path.Combine(path + "unzip"));
+                ZipFile.ExtractToDirectory(Path.Combine(GetOrderPath, "temp.zip"), Path.Combine(GetOrderPath + "unzip"));
 
             }
             catch (IOException)
@@ -117,16 +125,23 @@ namespace Angon.master.scheduler
             }
         }
 
-        public void SlaveManager(Order order, OrderConfig orderConfig)
+        public void SlaveManager()
         {
             // expose JobsConfig so the runner for result can finish jobs
-            JobsConfig = GetJobsConfig(order);
+            JobsConfig = GetJobsConfig();
+
+            // clear JobsConfig.SentJobs as this might be a resume
+            foreach (string s in JobsConfig.SentJobs)
+            {
+                JobsConfig.Jobs.Add(s);
+            }
+            JobsConfig.SentJobs = new List<string>();
 
             List<Slave> listOfSlaves = CheckWhichSlavesAreAvailable();
-            while(JobsConfig.FinishedJobs.Count != JobsConfig.numberOfJobs)
+            while (JobsConfig.FinishedJobs.Count != JobsConfig.numberOfJobs)
             {
                 // if jobs are pending to be sent
-                if(JobsConfig.Jobs.Count != 0)
+                if (JobsConfig.Jobs.Count != 0)
                 {
                     foreach (Slave slave in listOfSlaves)
                     {
@@ -139,13 +154,14 @@ namespace Angon.master.scheduler
                 // The response will come to the server as a "Result" request
 
                 List<Slave> updatedlistOfSlaves = CheckWhichSlavesAreAvailable();
-                foreach(Slave slave in listOfSlaves)
+                foreach (Slave slave in listOfSlaves)
                 {
                     // if the slave had a job and it's not on the new list
                     if (slave.HasJob && !updatedlistOfSlaves.Any(ns => ns.UniqueToken.Equals(slave.UniqueToken)))
                     {
                         JobsConfig.SentJobs.Remove(slave.AssignedJob);
                         JobsConfig.Jobs.Add(slave.AssignedJob); // to be reassigned
+                        SaveStateOfJobsConfig();
                     }
                 }
                 listOfSlaves = updatedlistOfSlaves;
@@ -158,6 +174,7 @@ namespace Angon.master.scheduler
         private void SendJob(Slave slave)
         {
             // TODO : Send jobs to slaves
+            SaveStateOfJobsConfig();
         }
 
         public List<Slave> CheckWhichSlavesAreAvailable()
