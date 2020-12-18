@@ -137,6 +137,7 @@
     <Compile Include="common\runner\runners\OrderReciever.cs" />
     <Compile Include="common\runner\runners\Runner.cs" />
     <Compile Include="common\reciever\Reciever.cs" />
+    <Compile Include="common\utils\SecurityUtils.cs" />
     <Compile Include="master\scheduler\Scheduler.cs" />
     <Compile Include="master\server\Server.cs" />
     <Compile Include="common\storage\StorageProvider.cs" />

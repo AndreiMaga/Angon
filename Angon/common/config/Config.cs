@@ -49,5 +49,11 @@
         public string Version { get; set; }
 
         public int MilisecondsToSleep { get; set; }
+
+        public bool DisableExternalSplitter { get; set; }
+
+        public bool VerifySignature { get; set; }
+
+        public bool DeleteAfterUnzip { get; set; }
     }
 }
