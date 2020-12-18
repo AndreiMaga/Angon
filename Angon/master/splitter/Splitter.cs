@@ -90,7 +90,7 @@ namespace Angon.master.splitter
         {
             List<List<FileInfo>> groups = new List<List<FileInfo>>();
 
-            int max_groups = fileInfos.Count / 2;
+            int max_groups = (fileInfos.Count / 2) + 1;
 
             // splitting algorithm
             groups.Add(new List<FileInfo>());
@@ -107,7 +107,7 @@ namespace Angon.master.splitter
                 float avg = groups[0].Sum(x => x.Length);
                 int i = 1; // start from the second one
                 float current_sum = groups[i].Sum(x => x.Length);
-                while (fo.Length + current_sum > avg && i < max_groups)
+                while (fo.Length + current_sum > avg * OrderConfig.DefaultSplitterDeviation && i < max_groups)
                 {
                     avg = (avg + current_sum) / 2;
                     i++;
