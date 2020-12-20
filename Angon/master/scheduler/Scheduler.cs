@@ -6,6 +6,7 @@ using Angon.common.storage;
 using Angon.common.storage.data;
 using Angon.common.utils;
 using Angon.master.splitter;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,8 +22,8 @@ namespace Angon.master.scheduler
     {
         public static JobsConfig JobsConfig { get; private set; }
 
-        private Order Order { get; set; }
-        private OrderConfig OrderConfig { get; set; }
+        public Order Order { get; set; }
+        public OrderConfig OrderConfig { get; set; }
 
         private string GetOrderPath { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha); }
 
@@ -61,7 +62,7 @@ namespace Angon.master.scheduler
             if (OrderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
                 File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
-            if (OrderConfig.ShouldBeSplit == true && Order.Splitted == false)
+            if (OrderConfig.ShouldBeSplit && ! Order.Splitted)
             {
                 new Splitter(Order, OrderConfig).Split();
 
@@ -82,11 +83,13 @@ namespace Angon.master.scheduler
             string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
             if (File.Exists(path))
             {
-                return JsonSerializer.Deserialize<JobsConfig>(File.ReadAllText(path));
+                using (FileStream fs = File.OpenRead(path))
+                {
+                    return JsonSerializer.DeserializeAsync<JobsConfig>(fs).Result;
+                }
+
             }
-            JobsConfig jobsConfig = CreateJobsConfig();
-            File.WriteAllText(path, JsonSerializer.Serialize(jobsConfig));
-            return jobsConfig;
+            return CreateJobsConfig();
         }
 
         private JobsConfig CreateJobsConfig()
@@ -103,20 +106,42 @@ namespace Angon.master.scheduler
 
         private void SaveStateOfJobsConfig()
         {
-            File.WriteAllText(Path.Combine(GetOrderPath, "unzip", "jobconfig.json"), JsonSerializer.Serialize(JobsConfig));
+            string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
+            using (FileStream fs = File.Open(path, FileMode.OpenOrCreate))
+            {
+                JsonSerializer.SerializeAsync(fs,JobsConfig);
+            }
         }
-
 
         private void GetOrderConfig()
         {
-            OrderConfig = JsonSerializer.Deserialize<OrderConfig>(File.ReadAllText(Path.Combine(GetOrderPath, "unzip", "exe", "orderconfig.json")));
+            string path = Path.Combine(GetOrderPath, "unzip", "exe", "orderconfig.json");
+            if (File.Exists(path))
+            {
+                try
+                {
+                    using (FileStream fs = File.OpenRead(path))
+                    {
+                        OrderConfig = JsonSerializer.DeserializeAsync<OrderConfig>(fs).Result;
+                    }
+                }catch(Exception e)
+                {
+                    Log.Error(e.Message);
+                    OrderConfig = new OrderConfig();
+                }
+                
+            }
+            else
+            {
+                OrderConfig = new OrderConfig();
+            }
         }
 
         private void UnzipOrder()
         {
             try
             {
-                ZipFile.ExtractToDirectory(Path.Combine(GetOrderPath, "temp.zip"), Path.Combine(GetOrderPath + "unzip"));
+                ZipFile.ExtractToDirectory(Path.Combine(GetOrderPath, "temp.zip"), Path.Combine(GetOrderPath, "unzip"));
 
             }
             catch (IOException)
@@ -129,7 +154,7 @@ namespace Angon.master.scheduler
         {
             // expose JobsConfig so the runner for result can finish jobs
             JobsConfig = GetJobsConfig();
-
+            SaveStateOfJobsConfig();
             // clear JobsConfig.SentJobs as this might be a resume
             foreach (string s in JobsConfig.SentJobs)
             {

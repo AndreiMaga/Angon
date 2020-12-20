@@ -2,6 +2,7 @@
 using Angon.common.cmd;
 using Angon.common.config;
 using Angon.common.storage;
+using Angon.master.scheduler;
 using Angon.master.server;
 using CommandLine;
 using Serilog;
@@ -84,6 +85,7 @@ namespace Angon
         static void RunMaster(Options options)
         {
             Log.Information("Starting as master");
+            new Scheduler();
             new Server();
             Environment.Exit(0);
         }
