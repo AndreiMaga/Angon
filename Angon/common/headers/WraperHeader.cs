@@ -13,22 +13,12 @@ namespace Angon.common.headers
         /// <summary>
         /// The type of the header that it's wrapped inside <see cref="data"/>
         /// </summary>
-        char type;
+        public char Type { get; set; }
 
         /// <summary>
         /// All the other headers as bytes
         /// </summary>
-        byte[] data;
-
-        /// <summary>
-        /// Getter/Setter for <see cref="type"/>
-        /// </summary>
-        public char Type { get => type; set => type = value; }
-
-        /// <summary>
-        /// Getter/Setter for <see cref="data"/>
-        /// </summary>
-        public byte[] Data { get => data; set => data = value; }
+        public byte[] Data { get; set; }
 
         /// <summary>
         /// Default constructor

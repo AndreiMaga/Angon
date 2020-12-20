@@ -7,7 +7,7 @@ namespace Angon.common.headers
     [Serializable]
     class ServerAvailableHeader : ISerializable
     {
-        
+
         public ServerAvailableHeader() { }
         public ServerAvailableHeader(SerializationInfo info, StreamingContext context)
         {
