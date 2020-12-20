@@ -9,22 +9,22 @@ namespace Angon.master.scheduler
         /// True -> Splitter will run
         /// False -> Will assume every job it's in it's own folder
         /// </summary>
-        public bool ShouldBeSplit;
+        public bool ShouldBeSplit = true;
 
         /// <summary>
         /// Clients can send their own splitter.
         /// SECURITY RISK, disabled by default inside master's config
         /// </summary>
-        public string NameOfExternalSplitter;
+        public string NameOfExternalSplitter = "";
 
-        public string ExternalSplitterArguments;
+        public string ExternalSplitterArguments = "";
 
         /// <summary>
         /// Should the splitter delete the zip file after unzipping it
         /// </summary>
-        public bool ShouldDeleteAfterUnzip;
+        public bool ShouldDeleteAfterUnzip = false;
 
-        public float DefaultSplitterDeviation;
+        public float DefaultSplitterDeviation = 0.05f;
 #pragma warning restore 0649
     }
 }
