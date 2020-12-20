@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Angon.common.headers
@@ -31,9 +32,10 @@ namespace Angon.common.headers
         /// </summary>
         public ServerHelloHeader(SerializationInfo info, StreamingContext context)
         {
-            AcceptedRequest = (bool)info.GetValue("AcceptedRequest", typeof(bool));
-            Sha = (string)info.GetValue("Sha", typeof(string));
-            Message = (string)info.GetValue("Message", typeof(string));
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                fi.SetValue(this, info.GetValue(fi.Name, fi.PropertyType));
+            }
         }
 
         /// <summary>
@@ -41,9 +43,10 @@ namespace Angon.common.headers
         /// </summary>
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("AcceptedRequest", AcceptedRequest, typeof(bool));
-            info.AddValue("Sha", Sha, typeof(string));
-            info.AddValue("Message", Message, typeof(string));
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                info.AddValue(fi.Name, fi.GetValue(this), fi.PropertyType);
+            }
         }
     }
 }

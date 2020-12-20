@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Angon.common.headers
@@ -21,21 +22,18 @@ namespace Angon.common.headers
         public ClientHelloHeader() { }
         public ClientHelloHeader(SerializationInfo info, StreamingContext context)
         {
-            clientUTCTime = (DateTime)info.GetValue("ClientUTCTime", typeof(DateTime));
-            clientIP = (string)info.GetValue("ClientIP", typeof(string));
-            sizeInBytes = (long)info.GetValue("SizeInBytes", typeof(long));
-            clientVersion = (string)info.GetValue("ClientVersion", typeof(string));
-            clientToken = (string)info.GetValue("ClientToken", typeof(string));
-
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                fi.SetValue(this, info.GetValue(fi.Name, fi.PropertyType));
+            }
 
         }
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            info.AddValue("ClientUTCTime", ClientUTCTime, typeof(DateTime));
-            info.AddValue("ClientIP", ClientIP, typeof(string));
-            info.AddValue("SizeInBytes", SizeInBytes, typeof(long));
-            info.AddValue("ClientVersion", ClientVersion, typeof(string));
-            info.AddValue("ClientToken", ClientToken, typeof(string));
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                info.AddValue(fi.Name, fi.GetValue(this), fi.PropertyType);
+            }
         }
     }
 }

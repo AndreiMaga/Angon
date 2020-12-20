@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Angon.common.headers
@@ -30,15 +31,6 @@ namespace Angon.common.headers
         public byte[] Data { get => data; set => data = value; }
 
         /// <summary>
-        /// Serialization method
-        /// </summary>
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Type", type, typeof(char));
-            info.AddValue("Data", data, typeof(byte[]));
-        }
-
-        /// <summary>
         /// Default constructor
         /// </summary>
         public WraperHeader() { }
@@ -48,8 +40,21 @@ namespace Angon.common.headers
         /// </summary>
         public WraperHeader(SerializationInfo info, StreamingContext context)
         {
-            type = (char)info.GetValue("Type", typeof(char));
-            data = (byte[])info.GetValue("Data", typeof(byte[]));
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                fi.SetValue(this, info.GetValue(fi.Name, fi.PropertyType));
+            }
+        }
+
+        /// <summary>
+        /// Serialization method
+        /// </summary>
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            foreach (PropertyInfo fi in GetType().GetProperties())
+            {
+                info.AddValue(fi.Name, fi.GetValue(this), fi.PropertyType);
+            }
         }
     }
 }
