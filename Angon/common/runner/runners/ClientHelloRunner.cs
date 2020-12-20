@@ -80,7 +80,11 @@ namespace Angon.common.runner.runners
         /// <param name="ch"><see cref="ClientHello"/></param>
         public static void Run(GenericHello<ClientHelloHeader> ch)
         {
+#if DEBUG
+            Tuple<string, bool> auth = new Tuple<string, bool>("", true);
+#else
             Tuple<string, bool> auth = Authentification.AuthenticateClient(ch.header.ClientIP, ch.header.ClientToken);
+#endif
             string sha = "";
             bool aproval = false;
             if (auth.Item2 == true)

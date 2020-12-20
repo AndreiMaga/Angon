@@ -93,7 +93,11 @@ namespace Angon.client
             ClientIP = ConfigReader.GetInstance().Config.PredefinedIP == "" ? Networking.GetIPAddress() : ConfigReader.GetInstance().Config.PredefinedIP,
             ClientVersion = ConfigReader.GetInstance().Config.Version,
             SizeInBytes = new FileInfo(path).Length,
+#if DEBUG
+            ClientToken = ""
+#else
             ClientToken = StorageProvider.GetInstance().GetClientsToken()
+#endif
         };
 
         /// <summary>
