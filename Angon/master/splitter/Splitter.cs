@@ -83,7 +83,7 @@ namespace Angon.master.splitter
 
         private int CompareFileInfo(FileInfo x, FileInfo y)
         {
-            return x.Length.CompareTo(y.Length);
+            return y.Length.CompareTo(x.Length);
         }
 
         private void SplitFileInfos(List<FileInfo> fileInfos)
@@ -96,7 +96,7 @@ namespace Angon.master.splitter
             groups.Add(new List<FileInfo>());
             groups[0].Add(Pop(fileInfos));
             groups.Add(new List<FileInfo>());
-            groups[0].Add(Pop(fileInfos));
+            groups[1].Add(Pop(fileInfos));
 
 
             // while there are still file infos to split
@@ -106,14 +106,20 @@ namespace Angon.master.splitter
                 FileInfo fo = Pop(fileInfos);
                 float avg = groups[0].Sum(x => x.Length);
                 int i = 1; // start from the second one
-                float current_sum = groups[i].Sum(x => x.Length);
-                while (fo.Length + current_sum > avg * OrderConfig.DefaultSplitterDeviation && i < max_groups)
+                float current_sum = groups[1].Sum(x => x.Length);
+                while (fo.Length + current_sum > avg + avg * OrderConfig.DefaultSplitterDeviation && i < max_groups)
                 {
-                    avg = (avg + current_sum) / 2;
                     i++;
+                    if(i >= groups.Count)
+                    {
+                        groups.Add(new List<FileInfo>());
+                        break;
+                    }
+                    avg = (avg + current_sum) / 2;
                     current_sum = groups[i].Sum(x => x.Length);
                 }
                 // if i == max groups, append to the first group
+
                 groups[i == max_groups ? 0 : i].Add(fo);
             }
             
