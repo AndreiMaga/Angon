@@ -104,7 +104,7 @@ namespace Angon.common.storage
         public Order GetOldestNotFinishedOrder()
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM orders where created_at=(SELECT MAX(CAST(created_at as integer))) FROM orders WHERE status not like 'done');";
+            command.CommandText = @"SELECT * FROM orders where created_at=(SELECT MAX(CAST(created_at as integer)) FROM orders WHERE status not like 'done');";
             using (var reader = command.ExecuteReader())
             {
                 if (reader.Read())
