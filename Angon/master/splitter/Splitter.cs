@@ -3,7 +3,6 @@ using Angon.common.storage.data;
 using Angon.common.utils;
 using Angon.master.scheduler;
 using Serilog;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,13 +10,13 @@ using System.Linq;
 
 namespace Angon.master.splitter
 {
-    
+
     class Splitter
     {
         private readonly Order Order;
 
         public static bool MaliciousReturn = false;
-        private string PathToOrder { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath,Order.Sha,"unzip"); }
+        private string PathToOrder { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha, "unzip"); }
 
         private string PathToInputFolder { get => Path.Combine(PathToOrder, "input"); }
         private string PathToSplitResult { get => Path.Combine(PathToInputFolder, "jobs"); }
@@ -32,7 +31,7 @@ namespace Angon.master.splitter
 
         public void Split()
         {
-            if(!ConfigReader.GetInstance().Config.DisableExternalSplitter && OrderConfig.NameOfExternalSplitter != "")
+            if (!ConfigReader.GetInstance().Config.DisableExternalSplitter && OrderConfig.NameOfExternalSplitter != "")
             {
                 if (ConfigReader.GetInstance().Config.VerifySignature && !SecurityUtils.FileIsSigned(OrderConfig.NameOfExternalSplitter))
                 {
@@ -51,8 +50,8 @@ namespace Angon.master.splitter
 
             // run default splitter
             List<FileInfo> fileInfos = new List<FileInfo>();
-            
-            foreach(string inputFilePath in Directory.GetFiles(PathToInputFolder))
+
+            foreach (string inputFilePath in Directory.GetFiles(PathToInputFolder))
             {
                 fileInfos.Add(new FileInfo(inputFilePath));
             }
@@ -66,7 +65,7 @@ namespace Angon.master.splitter
             Directory.CreateDirectory(PathToSplitResult);
 
             // No groups to be made with 1 file
-            if( fileInfos.Count == 1)
+            if (fileInfos.Count == 1)
             {
                 MoveFileInfoToDirectory(fileInfos[0], CreateJobDirectory());
                 return;
@@ -75,7 +74,7 @@ namespace Angon.master.splitter
             fileInfos.Sort(CompareFileInfo);
 
             SplitFileInfos(fileInfos);
-            
+
 
             // Splitting is done
 
@@ -110,7 +109,7 @@ namespace Angon.master.splitter
                 while (fo.Length + current_sum > avg + avg * OrderConfig.DefaultSplitterDeviation && i < max_groups)
                 {
                     i++;
-                    if(i >= groups.Count)
+                    if (i >= groups.Count)
                     {
                         groups.Add(new List<FileInfo>());
                         break;
@@ -122,8 +121,8 @@ namespace Angon.master.splitter
 
                 groups[i == max_groups ? 0 : i].Add(fo);
             }
-            
-            foreach(List<FileInfo> group in groups)
+
+            foreach (List<FileInfo> group in groups)
             {
                 MoveGroupToDirectory(group);
             }
@@ -132,8 +131,8 @@ namespace Angon.master.splitter
         private void MoveGroupToDirectory(List<FileInfo> group)
         {
             string dir = CreateJobDirectory();
-            
-            foreach(FileInfo fi in group)
+
+            foreach (FileInfo fi in group)
             {
                 MoveFileInfoToDirectory(fi, dir);
             }
@@ -157,7 +156,7 @@ namespace Angon.master.splitter
 
             return dir;
         }
-        
+
         private T Pop<T>(List<T> list)
         {
             T r = list[0];

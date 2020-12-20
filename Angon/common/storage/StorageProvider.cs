@@ -162,7 +162,7 @@ namespace Angon.common.storage
             }
             return false;
         }
-        
+
         public void RegisterClientToken(string ip, string token)
         {
             using (var transaction = connection.BeginTransaction())
@@ -175,7 +175,7 @@ namespace Angon.common.storage
                 transaction.Commit();
             }
         }
-    
+
         public void UpdateSha(string sha)
         {
             using (var transaction = connection.BeginTransaction())

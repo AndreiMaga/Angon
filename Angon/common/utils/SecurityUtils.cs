@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Angon.common.utils
 {
@@ -19,7 +14,7 @@ namespace Angon.common.utils
                 {
                     return Path.Combine(binfolder, "x86", "signtool.exe");
                 }
-                else if(Directory.Exists(Path.Combine(binfolder, "x64")))
+                else if (Directory.Exists(Path.Combine(binfolder, "x64")))
                 {
                     Path.Combine(binfolder, "x64", "signtool.exe");
                 }
@@ -30,9 +25,9 @@ namespace Angon.common.utils
         public static bool FileIsSigned(string path)
         {
             string signtool = PathToSignTool();
-            if(signtool != "")
+            if (signtool != "")
             {
-                Process p = Process.Start(signtool, "verify " + path );
+                Process p = Process.Start(signtool, "verify " + path);
                 p.WaitForExit();
                 return p.ExitCode == 0;
             }

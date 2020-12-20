@@ -1,5 +1,4 @@
-﻿using Angon.common.auth;
-using Angon.common.comprotocols.requests;
+﻿using Angon.common.comprotocols.requests;
 using Angon.common.headers;
 using Angon.common.sender;
 using Angon.common.storage;
@@ -95,7 +94,7 @@ namespace Angon.common.runner.runners
                 {
                     Log.Warning("Order was not approved, fetching already existing sha!");
                     sha = GetExistingSha(ch.header);
-                    auth = new Tuple<string, bool>("Error: Existing order with sha:"+sha,false);
+                    auth = new Tuple<string, bool>("Error: Existing order with sha:" + sha, false);
                 }
                 else
                 {

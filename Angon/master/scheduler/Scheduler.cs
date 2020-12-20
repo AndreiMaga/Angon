@@ -62,7 +62,7 @@ namespace Angon.master.scheduler
             if (OrderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
                 File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
-            if (OrderConfig.ShouldBeSplit && ! Order.Splitted)
+            if (OrderConfig.ShouldBeSplit && !Order.Splitted)
             {
                 new Splitter(Order, OrderConfig).Split();
 
@@ -109,7 +109,7 @@ namespace Angon.master.scheduler
             string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
             using (FileStream fs = File.Open(path, FileMode.OpenOrCreate))
             {
-                JsonSerializer.SerializeAsync(fs,JobsConfig);
+                JsonSerializer.SerializeAsync(fs, JobsConfig);
             }
         }
 
@@ -124,12 +124,13 @@ namespace Angon.master.scheduler
                     {
                         OrderConfig = JsonSerializer.DeserializeAsync<OrderConfig>(fs).Result;
                     }
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Log.Error(e.Message);
                     OrderConfig = new OrderConfig();
                 }
-                
+
             }
             else
             {

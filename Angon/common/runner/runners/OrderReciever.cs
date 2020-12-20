@@ -6,7 +6,6 @@ using Angon.common.utils;
 using Serilog;
 using System;
 using System.IO;
-using System.Threading;
 
 namespace Angon.common.runner.runners
 {

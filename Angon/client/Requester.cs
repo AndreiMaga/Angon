@@ -29,7 +29,7 @@ namespace Angon.client
 
             try
             {
-                Directory.Delete(Path.Combine(basePath,"temp","exe"), true);
+                Directory.Delete(Path.Combine(basePath, "temp", "exe"), true);
 #if DEBUG
                 Log.Debug("Deleting {0}", Path.Combine(basePath, "temp", "exe"));
 #endif
