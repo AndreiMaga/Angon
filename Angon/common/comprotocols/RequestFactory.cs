@@ -1,5 +1,7 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.headers;
+using System;
+using System.Collections.Generic;
 
 namespace Angon.common.comprotocols
 {
@@ -8,6 +10,7 @@ namespace Angon.common.comprotocols
     /// </summary>
     class RequestFactory
     {
+
         /// <summary>
         /// "Factory" method that creates the right request based on the <see cref="WraperHeader.type"/>
         /// </summary>
@@ -18,10 +21,10 @@ namespace Angon.common.comprotocols
             switch (wh.Type)
             {
 
-                case 'C':
+                case HeaderTypes.ClientHelloHeader:
                     return new GenericHello<ClientHelloHeader>(wh.Data);
 
-                case 'S':
+                case HeaderTypes.ServerAvailableHeader:
                     return new GenericHello<ServerHelloHeader>(wh.Data);
 
                 default:

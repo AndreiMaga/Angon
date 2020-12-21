@@ -1,10 +1,12 @@
 ﻿using Angon.common.comprotocols;
+using Angon.common.config;
 using Angon.common.headers;
 using Angon.common.runner.runners;
 using Angon.common.utils;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Angon.common.reciever
@@ -20,6 +22,13 @@ namespace Angon.common.reciever
         /// <param name="client">the client to recieve data from</param>
         public void ProcessClient(TcpClient client)
         {
+
+            if (!CheckConnections(client))
+            {
+                client.Close();
+                return;
+            }
+
             List<byte> data = new List<byte>();
 
             NetworkStream stream = client.GetStream();
@@ -49,10 +58,44 @@ namespace Angon.common.reciever
         public void ProcessData(List<byte> data, TcpClient client)
         {
             WraperHeader wh = ByteArrayUtils.FromByteArray<WraperHeader>(data.ToArray());
+            if (!CheckRequest(wh))
+            {
+                return;
+            }
             Request req = RequestFactory.Factory(wh);
             req.Client = client;
             Runner.Start(req);
 
+        }
+
+        public bool CheckConnections(TcpClient client)
+        {
+            // slaves will only allow connections from the masters ip as defined in config
+            if (ConfigReader.GetInstance().Config.Type == 1)
+            {
+                if ((client.Client.RemoteEndPoint as IPEndPoint).Address.ToString() != ConfigReader.GetInstance().Config.Ip)
+                {
+                    return false;
+                }
+            }
+            // if the master has RestrictUnknownConnections active, only allow ip's defined in KnownIPs
+            if (ConfigReader.GetInstance().Config.Type == 0)
+            {
+                if (ConfigReader.GetInstance().Config.RestrictUnknownConnections)
+                {
+                    if(!ConfigReader.GetInstance().Config.KnownIPs.Contains((client.Client.RemoteEndPoint as IPEndPoint).Address.ToString()))
+                    {
+                        return false;
+                    }
+                }
+            }
+            // if everything is good
+            return true;
+        }
+
+        public bool CheckRequest(WraperHeader wh)
+        {
+            return AllowedRequests.GetType(ConfigReader.GetInstance().Config.Type).Contains(wh.Type);
         }
     }
 }

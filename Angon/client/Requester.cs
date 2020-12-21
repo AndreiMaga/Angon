@@ -110,7 +110,7 @@ namespace Angon.client
 
             WraperHeader wraperHeader = new WraperHeader
             {
-                Type = 'C',
+                Type = HeaderTypes.ClientHelloHeader,
                 Data = gh.Data
             };
 

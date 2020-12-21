@@ -111,7 +111,7 @@ namespace Angon.common.runner.runners
             // Wrap the ServerHello Header
             WraperHeader wraper = new WraperHeader
             {
-                Type = 'S',
+                Type = HeaderTypes.ServerHelloHeader,
                 Data = ByteArrayUtils.ToByteArray(CreateServerHelloHeader(aproval, sha, auth.Item1))
             };
 

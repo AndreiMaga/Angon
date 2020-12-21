@@ -9,5 +9,7 @@
     "Version": "0.0.1",
     "MilisecondsToSleep": 500,
     "DisableExternalSplitter": true,
-    "VerifySignature" :  false
+    "VerifySignature": false,
+    "RestrictUnknownConnections": false,
+    "KnownIPs" : ["127.0.0.1"]
 }

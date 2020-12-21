@@ -111,6 +111,7 @@ namespace Angon
         static void RunClient(Options options)
         {
             Log.Information("Starting as client");
+            ConfigReader.GetInstance().Config.Type = 2; // force the type to 2
             Requester.RunFromFolders(options.PathToExeFolder, options.PathToInputFolder);
             Environment.Exit(0);
         }
