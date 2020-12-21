@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Angon.master.server
+namespace Angon.common.server
 {
     /// <summary>
     /// Server that runs on the master.

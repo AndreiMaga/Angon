@@ -3,7 +3,7 @@ using Angon.common.cmd;
 using Angon.common.config;
 using Angon.common.storage;
 using Angon.master.scheduler;
-using Angon.master.server;
+using Angon.common.server;
 using CommandLine;
 using Serilog;
 using System;
@@ -23,7 +23,11 @@ namespace Angon
         /// <param name="args">Command line arguments</param>
         static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.File("log.txt").CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+#if DEBUG
+                .WriteTo.Console()
+#endif
+                .WriteTo.File("log.txt").CreateLogger();
             Log.Information("Starting with arguments " + string.Join(", ", args));
             CommandLine.Parser.Default.ParseArguments<Options>(args).WithParsed(Run).WithNotParsed(HandleErrors);
         }
