@@ -1,8 +1,9 @@
 ﻿using Angon.common.comprotocols;
 using Angon.common.comprotocols.requests;
 using Angon.common.headers;
+using Angon.common.runner.runners;
 
-namespace Angon.common.runner.runners
+namespace Angon.common.runner
 {
     /// <summary>
     /// Runner for requests
@@ -22,6 +23,9 @@ namespace Angon.common.runner.runners
                     break;
                 case GenericHello<ServerHelloHeader> sh:
                     ServerHelloRunner.Run(sh);
+                    break;
+                case JobRequest jr:
+                    JobRequestRunner.Run(jr);
                     break;
             }
         }

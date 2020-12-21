@@ -138,7 +138,7 @@
     <Compile Include="common\utils\Networking.cs" />
     <Compile Include="common\runner\runners\ClientHelloRunner.cs" />
     <Compile Include="common\runner\runners\OrderReciever.cs" />
-    <Compile Include="common\runner\runners\Runner.cs" />
+    <Compile Include="common\runner\Runner.cs" />
     <Compile Include="common\reciever\Reciever.cs" />
     <Compile Include="common\utils\SecurityUtils.cs" />
     <Compile Include="master\scheduler\JobsConfig.cs" />
