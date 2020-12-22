@@ -217,6 +217,12 @@ namespace Angon.master.scheduler
                         JobsConfig.Jobs.Add(slave.AssignedJob); // to be reassigned
                         SaveStateOfJobsConfig();
                     }
+                    // if the slave has a job, pass it
+                    // will be replaced with database info
+                    if(slave.HasJob)
+                    {
+                        updatedlistOfSlaves.Find(ns => ns.UniqueToken.Equals(slave.UniqueToken)).HasJob = true;
+                    }
                 }
                 listOfSlaves = updatedlistOfSlaves;
                 Task.Delay(ConfigReader.GetInstance().Config.MilisecondsToSleep);
