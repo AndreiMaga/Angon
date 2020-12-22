@@ -28,7 +28,7 @@ namespace Angon.common.runner.runners
 
         public static void Recieve(long size, NetworkStream stream, string sha)
         {
-            string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;
+            string path = Path.Combine(ConfigReader.GetInstance().Config.SavePath, sha);
             try
             {
                 Directory.CreateDirectory(path);
@@ -56,7 +56,7 @@ namespace Angon.common.runner.runners
                     return;
                 }
 
-                ByteArrayUtils.ByteArrayToFile(dataArray, path + "\\temp.zip"); // write data array to temp file
+                ByteArrayUtils.ByteArrayToFile(dataArray, Path.Combine(path, "temp.zip")); // write data array to temp file
 
                 size -= readTo;
             }
