@@ -58,6 +58,10 @@ namespace Angon.common.config
 
         public bool DeleteAfterUnzip { get; set; } = true;
 
+        public bool DeleteSplitFolderAfterJobZip { get; set; } = true;
+
+        public bool DeleteInputFolderAfterSplit { get; set; } = true;
+
         public bool RestrictUnknownConnections { get; set; } = false;
 
         public List<string> KnownIPs { get; set; } = new List<string>();

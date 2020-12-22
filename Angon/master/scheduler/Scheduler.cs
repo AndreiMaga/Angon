@@ -156,6 +156,7 @@ namespace Angon.master.scheduler
             // expose JobsConfig so the runner for result can finish jobs
             JobsConfig = GetJobsConfig();
             SaveStateOfJobsConfig();
+            ZipJobs();
             // clear JobsConfig.SentJobs as this might be a resume
             foreach (string s in JobsConfig.SentJobs)
             {
@@ -199,11 +200,74 @@ namespace Angon.master.scheduler
 
         private void SendJob(Slave slave)
         {
-            // TODO : Send jobs to slaves
+            string zipspath = Path.Combine(GetOrderPath, "jobs");
+            string job = JobsConfig.Jobs[0]; // take the first job
+            FileInfo fi = new FileInfo(Path.Combine(zipspath, job));
+
+            WraperHeader wraperHeader = new WraperHeader
+            {
+                Type = HeaderTypes.JobHeader,
+                Data = ByteArrayUtils.ToByteArray(new JobHeader
+                {
+                    JobID = job,
+                    Size = fi.Length
+                })
+            };
+
+            TcpClient serverConnection = new TcpClient(slave.Ip, slave.Port);
+            Sender.Send(wraperHeader, serverConnection);
+            Sender.SendZip(fi.FullName, serverConnection.GetStream());
+            serverConnection.Close();
+
+            slave.HasJob = true;
+            slave.AssignedJob = job;
+
+            // after it's sent
+            JobsConfig.Jobs.Remove(job);
             SaveStateOfJobsConfig();
         }
 
-        public List<Slave> CheckWhichSlavesAreAvailable()
+        private void ZipJobs()
+        {
+            string inputbasepath = Path.Combine(GetOrderPath, "unzip", "input", "jobs");
+            string resultpath = Path.Combine(GetOrderPath, "jobs");
+
+            int inbaselen = Directory.GetDirectories(inputbasepath).Length;
+
+            if (inbaselen == 0 || inbaselen == Directory.GetDirectories(resultpath).Length)
+            {
+                // Already zipped
+                return;
+            }
+
+            string exepath = Path.Combine(GetOrderPath, "unzip", "exe");
+            string temppath = Path.Combine(GetOrderPath, "temp");
+
+            // clean temp path and copy the exe inside
+            Directory.Delete(temppath, true);
+            Directory.CreateDirectory(temppath);
+            IOUtils.DirectoryCopy(exepath, Path.Combine(temppath, "exe"), true);
+
+            // for each job, take the job input and the exe , pack them into a zip and move them
+            // into resultpath
+            foreach (string job in JobsConfig.Jobs)
+            {
+                IOUtils.DirectoryCopy(Path.Combine(inputbasepath, job), Path.Combine(temppath, "input"), true);
+                ZipFile.CreateFromDirectory(temppath, Path.Combine(resultpath, job));
+
+                if (ConfigReader.GetInstance().Config.DeleteSplitFolderAfterJobZip)
+                {
+                    Directory.Delete(Path.Combine(inputbasepath, job), true);
+                }
+
+                // delete the input folder from the temp path as another might take it's place
+                Directory.Delete(Path.Combine(temppath, "input"), true);
+            }
+
+            // all jobs are in resultpath
+        }
+
+        private List<Slave> CheckWhichSlavesAreAvailable()
         {
             StorageProvider.GetInstance().GetSlaves().ForEach(CheckerStart); // this will change the list
 
@@ -211,7 +275,7 @@ namespace Angon.master.scheduler
 
         }
 
-        public void CheckerStart(Slave s)
+        private void CheckerStart(Slave s)
         {
             try
             {

@@ -27,6 +27,9 @@ namespace Angon.common.comprotocols
                 case HeaderTypes.ServerAvailableHeader:
                     return new GenericHello<ServerHelloHeader>(wh.Data);
 
+                case HeaderTypes.JobHeader:
+                    return new JobRequest(wh.Data);
+
                 default:
                     return new Request(wh.Data);
             }

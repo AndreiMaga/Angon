@@ -121,14 +121,17 @@
     <Compile Include="common\comprotocols\RequestFactory.cs" />
     <Compile Include="common\comprotocols\AllowedRequests.cs" />
     <Compile Include="common\comprotocols\requests\GenericHello.cs" />
+    <Compile Include="common\comprotocols\requests\JobRequest.cs" />
     <Compile Include="common\config\Config.cs" />
     <Compile Include="common\config\ConfigReader.cs" />
     <Compile Include="common\headers\ClientHelloHeader.cs" />
     <Compile Include="common\headers\HeaderTypes.cs" />
+    <Compile Include="common\headers\JobHeader.cs" />
     <Compile Include="common\headers\JobResultHeader.cs" />
     <Compile Include="common\headers\ServerAvailableHeader.cs" />
     <Compile Include="common\headers\ServerHelloHeader.cs" />
     <Compile Include="common\headers\WraperHeader.cs" />
+    <Compile Include="common\runner\runners\JobRequestRunner.cs" />
     <Compile Include="common\runner\runners\ServerHelloRunner.cs" />
     <Compile Include="common\sender\Sender.cs" />
     <Compile Include="common\storage\data\Order.cs" />

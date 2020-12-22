@@ -6,21 +6,27 @@ using Angon.common.utils;
 using Serilog;
 using System;
 using System.IO;
+using System.Net.Sockets;
 
 namespace Angon.common.runner.runners
 {
-    /// <summary>
-    /// Class wraping <see cref="OrderReciever.Recieve(ClientHello, string)"/>
-    /// Server side
-    /// </summary>
     class OrderReciever
     {
-        /// <summary>
-        /// Recieves the zip file from <seealso cref="ServerHelloRunner.Run(ServerHello)"/>
-        /// </summary>
-        /// <param name="ch"><see cref="ClientHello"/>the client hello</param>
-        /// <param name="sha">the sha given to the order</param>
-        public static void Recieve(GenericHello<ClientHelloHeader> ch, string sha)
+
+        public static void ReicieveClientHello(GenericHello<ClientHelloHeader> ch, string sha)
+        {
+            Recieve(ch.header.SizeInBytes, ch.Client.GetStream(), sha);
+            // Register order to database
+            StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
+        }
+
+        public static void RecieveJob(JobRequest jr)
+        {
+            Recieve(jr.header.Size, jr.Client.GetStream(), jr.header.JobID);
+
+        }
+
+        public static void Recieve(long size, NetworkStream stream, string sha)
         {
             string path = ConfigReader.GetInstance().Config.SavePath + "\\" + sha;
             try
@@ -32,11 +38,7 @@ namespace Angon.common.runner.runners
 
             }
 
-            // This will make an object with the ulong stored.
             byte[] dataArray = new byte[ConfigReader.GetInstance().Config.ReadSize];
-            // create an array of size described in the config , this will eat up a lot of memory if the 
-
-            long size = ch.header.SizeInBytes;
 
             Log.Information("Writing zip file of {0} bytes!", size);
 
@@ -45,11 +47,11 @@ namespace Angon.common.runner.runners
                 int readTo = size > dataArray.Length ? dataArray.Length : (int)size;
                 try
                 {
-                    ch.Client.GetStream().Read(dataArray, 0, readTo);
+                    stream.Read(dataArray, 0, readTo);
                 }
                 catch (Exception)
                 {
-                    Log.Warning("The server lost connection with the client, aborting!");
+                    Log.Warning("Something happened, aborting!");
                     CleanUp(path);
                     return;
                 }
@@ -60,8 +62,7 @@ namespace Angon.common.runner.runners
             }
 
             Log.Information("Finished writing the zip file to {0}", path);
-            // Register order to database
-            StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
+
         }
 
         private static void CleanUp(string path)

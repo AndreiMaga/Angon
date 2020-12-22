@@ -11,7 +11,7 @@ namespace Angon.common.comprotocols
     {
         public static List<char> Master { get; } = new List<char> { HeaderTypes.ClientHelloHeader, HeaderTypes.JobResultHeader };
         public static List<char> Client { get; } = new List<char> { HeaderTypes.ServerHelloHeader };
-        public static List<char> Slave { get; } = new List<char> { HeaderTypes.ServerAvailableHeader };
+        public static List<char> Slave { get; } = new List<char> { HeaderTypes.ServerAvailableHeader, HeaderTypes.JobHeader };
     
         public static List<char> GetType(int index)
         {

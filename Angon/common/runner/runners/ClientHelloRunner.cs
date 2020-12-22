@@ -120,7 +120,7 @@ namespace Angon.common.runner.runners
             // Wait for the orderpost
             if (aproval == true)
             {
-                OrderReciever.Recieve(ch, sha);
+                OrderReciever.ReicieveClientHello(ch, sha);
             }
             // If aproval is false, the connection will close
 

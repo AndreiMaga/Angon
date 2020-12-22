@@ -75,9 +75,14 @@ namespace Angon.master.splitter
 
             SplitFileInfos(fileInfos);
 
-
             // Splitting is done
-
+            if (ConfigReader.GetInstance().Config.DeleteInputFolderAfterSplit)
+            {
+                foreach (string inputFilePath in Directory.GetFiles(PathToInputFolder))
+                {
+                    File.Delete(Path.Combine(PathToInputFolder, inputFilePath));
+                }
+            }
         }
 
         private int CompareFileInfo(FileInfo x, FileInfo y)
