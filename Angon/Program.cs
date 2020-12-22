@@ -8,6 +8,7 @@ using CommandLine;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Angon
 {
@@ -89,7 +90,13 @@ namespace Angon
         static void RunMaster(Options options)
         {
             Log.Information("Starting as master");
-            new Scheduler();
+
+            Task t = new Task(() =>
+            {
+                new Scheduler().Run();
+            });
+            t.Start();
+
             new Server();
             Environment.Exit(0);
         }

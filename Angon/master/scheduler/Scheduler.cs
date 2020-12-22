@@ -27,15 +27,7 @@ namespace Angon.master.scheduler
 
         private string GetOrderPath { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha); }
 
-        public Scheduler()
-        {
-            Task t = new Task(() =>
-            {
-                Run();
-            });
-
-            t.Start();
-        }
+        public Scheduler() { }
 
         public void Run()
         {
@@ -150,9 +142,9 @@ namespace Angon.master.scheduler
             else
             {
 #if DEBUG
-                    Log.Debug("Order config exists.");
+                Log.Debug("Order config exists.");
 #endif
-                    OrderConfig = new OrderConfig();
+                OrderConfig = new OrderConfig();
             }
         }
 
@@ -219,7 +211,7 @@ namespace Angon.master.scheduler
                     }
                     // if the slave has a job, pass it
                     // will be replaced with database info
-                    if(slave.HasJob)
+                    if (slave.HasJob)
                     {
                         updatedlistOfSlaves.Find(ns => ns.UniqueToken.Equals(slave.UniqueToken)).HasJob = true;
                     }
