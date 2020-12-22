@@ -16,7 +16,7 @@ namespace Angon.common.utils
                 }
                 else if (Directory.Exists(Path.Combine(binfolder, "x64")))
                 {
-                    Path.Combine(binfolder, "x64", "signtool.exe");
+                    return Path.Combine(binfolder, "x64", "signtool.exe");
                 }
             }
             return "";
