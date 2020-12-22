@@ -69,7 +69,7 @@ namespace Angon.common.storage
             return false;
         }
 
-        public void ClientRegisteredOrder(GenericHello<ClientHelloHeader> ch, string sha)
+        public void ClientRegisteredOrder(RequestWithHeader<ClientHelloHeader> ch, string sha)
         {
             using (var transaction = connection.BeginTransaction())
             {

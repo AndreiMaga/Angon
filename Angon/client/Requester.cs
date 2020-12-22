@@ -106,7 +106,7 @@ namespace Angon.client
         /// <param name="chh">The header to be sent</param>
         public static void SendClientHello(ClientHelloHeader chh)
         {
-            GenericHello<ClientHelloHeader> gh = new GenericHello<ClientHelloHeader>(ByteArrayUtils.ToByteArray(chh));
+            RequestWithHeader<ClientHelloHeader> gh = new RequestWithHeader<ClientHelloHeader>(ByteArrayUtils.ToByteArray(chh));
 
             WraperHeader wraperHeader = new WraperHeader
             {

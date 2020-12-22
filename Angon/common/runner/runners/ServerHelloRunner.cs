@@ -18,7 +18,7 @@ namespace Angon.common.runner.runners
         /// Runs the logic for when Server Hello Header was recieved
         /// </summary>
         /// <param name="ch"><see cref="ServerHello"/> containing all the necessary information</param>
-        public static void Run(GenericHello<ServerHelloHeader> ch)
+        public static void Run(RequestWithHeader<ServerHelloHeader> ch)
         {
             if (!ch.header.AcceptedRequest)
             {

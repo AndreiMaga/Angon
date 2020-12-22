@@ -77,7 +77,7 @@ namespace Angon.common.runner.runners
         /// Runs the logic for Client Hello
         /// </summary>
         /// <param name="ch"><see cref="ClientHello"/></param>
-        public static void Run(GenericHello<ClientHelloHeader> ch)
+        public static void Run(RequestWithHeader<ClientHelloHeader> ch)
         {
 #if DEBUG
             Tuple<string, bool> auth = new Tuple<string, bool>("", true);

@@ -18,13 +18,13 @@ namespace Angon.common.runner
         {
             switch (request)
             {
-                case GenericHello<ClientHelloHeader> ch:
+                case RequestWithHeader<ClientHelloHeader> ch:
                     ClientHelloRunner.Run(ch);
                     break;
-                case GenericHello<ServerHelloHeader> sh:
+                case RequestWithHeader<ServerHelloHeader> sh:
                     ServerHelloRunner.Run(sh);
                     break;
-                case JobRequest jr:
+                case RequestWithHeader<JobHeader> jr:
                     JobRequestRunner.Run(jr);
                     break;
             }

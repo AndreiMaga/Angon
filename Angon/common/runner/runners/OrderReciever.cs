@@ -13,14 +13,14 @@ namespace Angon.common.runner.runners
     class OrderReciever
     {
 
-        public static void ReicieveClientHello(GenericHello<ClientHelloHeader> ch, string sha)
+        public static void ReicieveClientHello(RequestWithHeader<ClientHelloHeader> ch, string sha)
         {
             Recieve(ch.header.SizeInBytes, ch.Client.GetStream(), sha);
             // Register order to database
             StorageProvider.GetInstance().ClientRegisteredOrder(ch, sha);
         }
 
-        public static void RecieveJob(JobRequest jr)
+        public static void RecieveJob(RequestWithHeader<JobHeader> jr)
         {
             Recieve(jr.header.Size, jr.Client.GetStream(), jr.header.JobID);
 

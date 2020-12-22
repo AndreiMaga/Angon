@@ -120,8 +120,7 @@
     <Compile Include="common\comprotocols\Request.cs" />
     <Compile Include="common\comprotocols\RequestFactory.cs" />
     <Compile Include="common\comprotocols\AllowedRequests.cs" />
-    <Compile Include="common\comprotocols\requests\GenericHello.cs" />
-    <Compile Include="common\comprotocols\requests\JobRequest.cs" />
+    <Compile Include="common\comprotocols\requests\RequestWithHeader.cs" />
     <Compile Include="common\config\Config.cs" />
     <Compile Include="common\config\ConfigReader.cs" />
     <Compile Include="common\headers\ClientHelloHeader.cs" />

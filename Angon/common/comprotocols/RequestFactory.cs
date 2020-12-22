@@ -22,13 +22,13 @@ namespace Angon.common.comprotocols
             {
 
                 case HeaderTypes.ClientHelloHeader:
-                    return new GenericHello<ClientHelloHeader>(wh.Data);
+                    return new RequestWithHeader<ClientHelloHeader>(wh.Data);
 
                 case HeaderTypes.ServerAvailableHeader:
-                    return new GenericHello<ServerHelloHeader>(wh.Data);
+                    return new RequestWithHeader<ServerHelloHeader>(wh.Data);
 
                 case HeaderTypes.JobHeader:
-                    return new JobRequest(wh.Data);
+                    return new RequestWithHeader<JobHeader>(wh.Data);
 
                 default:
                     return new Request(wh.Data);
