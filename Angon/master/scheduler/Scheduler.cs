@@ -55,19 +55,30 @@ namespace Angon.master.scheduler
         public void RunOrder()
         {
             Order = StorageProvider.GetInstance().GetOldestNotFinishedOrder();
+            Log.Information("Running order {0}", Order.Sha);
 
             UnzipOrder();
             GetOrderConfig();
 
+#if DEBUG
+            Log.Debug("Checking if the order zip should be deleted.");
+#endif
             if (OrderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
                 File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
             if (OrderConfig.ShouldBeSplit && !Order.Splitted)
             {
+#if DEBUG
+                Log.Debug("Splitting the order.");
+#endif
                 new Splitter(Order, OrderConfig).Split();
 
                 if (Splitter.MaliciousReturn)
                 {
+#if DEBUG
+                    Log.Debug("As Geralt would put it:");
+                    Log.Error("...Fuck!...");
+#endif
                     // TODO
                     Splitter.MaliciousReturn = false;
                     return; // Untill this is done, all malicious runs will end up in an infinite loop
@@ -115,9 +126,13 @@ namespace Angon.master.scheduler
 
         private void GetOrderConfig()
         {
+
             string path = Path.Combine(GetOrderPath, "unzip", "exe", "orderconfig.json");
             if (File.Exists(path))
             {
+#if DEBUG
+                Log.Debug("Order config exists.");
+#endif
                 try
                 {
                     using (FileStream fs = File.OpenRead(path))
@@ -134,12 +149,19 @@ namespace Angon.master.scheduler
             }
             else
             {
-                OrderConfig = new OrderConfig();
+#if DEBUG
+                    Log.Debug("Order config exists.");
+#endif
+                    OrderConfig = new OrderConfig();
             }
         }
 
         private void UnzipOrder()
         {
+#if DEBUG
+            Log.Debug("Unzipping order");
+#endif
+
             try
             {
                 ZipFile.ExtractToDirectory(Path.Combine(GetOrderPath, "temp.zip"), Path.Combine(GetOrderPath, "unzip"));
@@ -175,7 +197,12 @@ namespace Angon.master.scheduler
                         SendJob(slave);
                         // if all jobs were sent
                         if (JobsConfig.Jobs.Count == 0)
+                        {
+#if DEBUG
+                            Log.Debug("All jobs were sent");
+#endif
                             break;
+                        }
                     }
                 }
                 // The response will come to the server as a "Result" request
@@ -200,8 +227,13 @@ namespace Angon.master.scheduler
 
         private void SendJob(Slave slave)
         {
+
             string zipspath = Path.Combine(GetOrderPath, "jobs");
             string job = JobsConfig.Jobs[0]; // take the first job
+
+#if DEBUG
+            Log.Debug("Sending job {0} to {1}.", job, slave.UniqueToken);
+#endif
             FileInfo fi = new FileInfo(Path.Combine(zipspath, job));
 
             WraperHeader wraperHeader = new WraperHeader
@@ -229,6 +261,9 @@ namespace Angon.master.scheduler
 
         private void ZipJobs()
         {
+#if DEBUG
+            Log.Debug("Zipping jobs.");
+#endif
             string inputbasepath = Path.Combine(GetOrderPath, "unzip", "input", "jobs");
             string resultpath = Path.Combine(GetOrderPath, "jobs");
 

@@ -55,14 +55,25 @@ namespace Angon.master.splitter
             {
                 fileInfos.Add(new FileInfo(inputFilePath));
             }
-
+#if DEBUG
+            Log.Debug("Splitter has to split {0} files with a total of {1} bytes.", fileInfos.Count, fileInfos.Sum(x => x.Length));
+#endif
             // sanity check
             if (fileInfos.Count == 0)
             {
                 return;
             }
-
-            Directory.CreateDirectory(PathToSplitResult);
+            try
+            {
+                Directory.CreateDirectory(PathToSplitResult);
+            }
+            catch
+            {
+#if DEBUG
+                Log.Debug("Trying to split an already splitted order.");
+#endif
+                return;
+            }
 
             // No groups to be made with 1 file
             if (fileInfos.Count == 1)
@@ -78,6 +89,9 @@ namespace Angon.master.splitter
             // Splitting is done
             if (ConfigReader.GetInstance().Config.DeleteInputFolderAfterSplit)
             {
+#if DEBUG
+                Log.Debug("Deleting input folder after split was run.");
+#endif
                 foreach (string inputFilePath in Directory.GetFiles(PathToInputFolder))
                 {
                     File.Delete(Path.Combine(PathToInputFolder, inputFilePath));
@@ -126,6 +140,15 @@ namespace Angon.master.splitter
 
                 groups[i == max_groups ? 0 : i].Add(fo);
             }
+
+#if DEBUG
+            Log.Debug("Splitted the files into {0} groups with the average length of {1}.",
+                groups.Count,
+                groups.Average(x => x.Sum(y => y.Length))
+                );
+            Log.Debug("Max Group size:{0}", groups.Max(x => x.Max(y => y.Length )));
+            Log.Debug("Min Group size:{0}", groups.Min(x => x.Min(y => y.Length )));
+#endif
 
             foreach (List<FileInfo> group in groups)
             {
