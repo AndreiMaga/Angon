@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace Angon.master.scheduler
 {
     class OrderConfig
@@ -25,6 +27,11 @@ namespace Angon.master.scheduler
         public bool ShouldDeleteAfterUnzip = false;
 
         public float DefaultSplitterDeviation = 0.05f;
+
+        public string NameOfExecutable = "Angon.exe";
+        public string ArgumentsForExecutable = "";
+
+        public int SuccessExitCode = 0;
 #pragma warning restore 0649
     }
 }

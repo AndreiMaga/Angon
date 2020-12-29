@@ -9,6 +9,7 @@ using Angon.master.splitter;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -58,6 +59,14 @@ namespace Angon.master.scheduler
             if (OrderConfig.ShouldDeleteAfterUnzip || ConfigReader.GetInstance().Config.DeleteAfterUnzip)
                 File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
+            // check if it's running as Slave
+            if( ConfigReader.GetInstance().Config.Type == 1)
+            {
+                // The scheduler it's inside a slave
+                ContinueSlave();
+                return; // Slave does not need to split the input folder
+            }
+
             if (OrderConfig.ShouldBeSplit && !Order.Splitted)
             {
 #if DEBUG
@@ -78,7 +87,42 @@ namespace Angon.master.scheduler
             }
 
             SlaveManager();
+        }
 
+        private void ContinueSlave()
+        {
+            // Check if the program exists in the exe folder
+            string pathToExecutable = Path.Combine(GetOrderPath, "unzip", "exe", OrderConfig.NameOfExecutable);
+            FileInfo fi = new FileInfo(pathToExecutable);
+            if (fi.FullName.Length != pathToExecutable.Length) // if the exe is reffered to with .. or in another folder
+            {
+                // don't run anything
+                return;
+            }
+
+            if (!fi.Exists) // if the exe does not exist
+            {
+                // don't run anything
+                return;
+            }
+
+            if(ConfigReader.GetInstance().Config.VerifySignature)
+            {
+                if (!SecurityUtils.FileIsSigned(pathToExecutable))
+                    return;
+            }
+
+            // if all checks are fine
+            // run exe with arguments passed in the order config
+            Process p = Process.Start(pathToExecutable, OrderConfig.ArgumentsForExecutable);
+            p.WaitForExit();
+
+            // the process is finished send it back to the master
+            if(p.ExitCode == OrderConfig.SuccessExitCode)
+            {
+                // Everything is ok
+                // Zip result and send it to master
+            }
         }
 
         private JobsConfig GetJobsConfig()
@@ -266,7 +310,10 @@ namespace Angon.master.scheduler
             string resultpath = Path.Combine(GetOrderPath, "jobs");
 
             int inbaselen = Directory.GetDirectories(inputbasepath).Length;
-
+            if (!Directory.Exists(resultpath))
+            {
+                Directory.CreateDirectory(resultpath);
+            }
             if (inbaselen == 0 || inbaselen == Directory.GetDirectories(resultpath).Length)
             {
                 // Already zipped
@@ -277,7 +324,11 @@ namespace Angon.master.scheduler
             string temppath = Path.Combine(GetOrderPath, "temp");
 
             // clean temp path and copy the exe inside
-            Directory.Delete(temppath, true);
+            if (Directory.Exists(temppath))
+            {
+                Directory.Delete(resultpath, true);
+            }
+
             Directory.CreateDirectory(temppath);
             IOUtils.DirectoryCopy(exepath, Path.Combine(temppath, "exe"), true);
 
@@ -285,12 +336,12 @@ namespace Angon.master.scheduler
             // into resultpath
             foreach (string job in JobsConfig.Jobs)
             {
-                IOUtils.DirectoryCopy(Path.Combine(inputbasepath, job), Path.Combine(temppath, "input"), true);
-                ZipFile.CreateFromDirectory(temppath, Path.Combine(resultpath, job));
+                IOUtils.DirectoryCopy(job, Path.Combine(temppath, "input"), true);
+                ZipFile.CreateFromDirectory(temppath, Path.Combine(resultpath, new DirectoryInfo(job).Name));
 
                 if (ConfigReader.GetInstance().Config.DeleteSplitFolderAfterJobZip)
                 {
-                    Directory.Delete(Path.Combine(inputbasepath, job), true);
+                    Directory.Delete(job, true);
                 }
 
                 // delete the input folder from the temp path as another might take it's place

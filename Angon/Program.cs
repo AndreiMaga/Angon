@@ -26,7 +26,7 @@ namespace Angon
         {
             Log.Logger = new LoggerConfiguration()
 #if DEBUG
-                .WriteTo.Console()
+                .WriteTo.Console().MinimumLevel.Debug()
 #endif
                 .WriteTo.File("log.txt").CreateLogger();
             Log.Information("Starting with arguments " + string.Join(", ", args));
@@ -108,6 +108,15 @@ namespace Angon
         static void RunSlave(Options options)
         {
             Log.Information("Starting as slave");
+
+            Task t = new Task(() =>
+            {
+                new Scheduler().Run();
+            });
+            t.Start();
+
+            new Server();
+
             Environment.Exit(0);
         }
 
