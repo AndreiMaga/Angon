@@ -1,7 +1,4 @@
-﻿
-using System.Collections.Generic;
-
-namespace Angon.master.scheduler
+﻿namespace Angon.master.scheduler
 {
     class OrderConfig
     {
@@ -32,6 +29,8 @@ namespace Angon.master.scheduler
         public string ArgumentsForExecutable = "";
 
         public int SuccessExitCode = 0;
+
+        public string RelativePathFromExeToResult = "../result/";
 #pragma warning restore 0649
     }
 }

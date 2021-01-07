@@ -27,6 +27,24 @@ namespace Angon.common.runner
                 case RequestWithHeader<JobHeader> jr:
                     JobRequestRunner.Run(jr);
                     break;
+                case RequestWithHeader<ServerAvailableHeader> sah:
+                    ServerAvailableRunner.Run(sah);
+                    break;
+                case RequestWithHeader<JobResultHeader> jrh:
+                    JobResultRunner.Run(jrh);
+                    break;
+                case RequestWithHeader<RegisterHeader> rh:
+                    RegisterHeaderRunner.Run(rh);
+                    break;
+                case RequestWithHeader<RegisterResponseHeader> rrh:
+                    RegisterResponseRunner.Run(rrh);
+                    break;
+                case RequestWithHeader<RequestFinishedOrderHeader> rfo:
+                    RequestFinishedOrderRunner.Run(rfo);
+                    break;
+                case RequestWithHeader<FinishedOrderHeader> foh:
+                    FinishedOrderRunnder.Run(foh);
+                    break;
             }
         }
 

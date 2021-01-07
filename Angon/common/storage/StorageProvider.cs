@@ -60,10 +60,10 @@ namespace Angon.common.storage
 
         public Boolean ClientHasOrder(string ip)
         {
-            lock(connection)
+            lock (connection)
             {
                 var command = connection.CreateCommand();
-                command.CommandText = @"SELECT id FROM orders WHERE ip=$ip and status not like 'done';";
+                command.CommandText = @"SELECT id FROM orders WHERE ip=$ip and status not like 'finished';";
                 command.Parameters.AddWithValue("$ip", ip);
                 using (var reader = command.ExecuteReader())
                 {
@@ -96,12 +96,11 @@ namespace Angon.common.storage
                     transaction.Commit();
                 }
             }
-            
         }
 
         public void MasterRegisteredJob(RequestWithHeader<JobHeader> jr)
         {
-            lock(connection)
+            lock (connection)
             {
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -123,12 +122,12 @@ namespace Angon.common.storage
 
         public void ClearOrders()
         {
-            lock(connection)
+            lock (connection)
             {
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = connection.CreateCommand();
-                    command.CommandText = @"DELETE FROM orders;";
+                    command.CommandText = @"DELETE FROM orders";
                     command.ExecuteNonQuery();
                     transaction.Commit();
                 }
@@ -138,7 +137,7 @@ namespace Angon.common.storage
 
         public void FinishedOrder(Order order)
         {
-            lock(connection)
+            lock (connection)
             {
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -150,7 +149,7 @@ namespace Angon.common.storage
                     transaction.Commit();
                 }
             }
-            
+
         }
 
         public void UpdateSlave(string uniqueToken, bool available)
@@ -171,7 +170,7 @@ namespace Angon.common.storage
 
         public string GetTokenAsSlave()
         {
-            lock(connection)
+            lock (connection)
             {
                 string res = "";
                 var command = connection.CreateCommand();
@@ -185,15 +184,15 @@ namespace Angon.common.storage
                 }
                 return res;
             }
-            
+
         }
 
         public int NumberOfJobsToBeDone()
         {
-            lock(connection)
+            lock (connection)
             {
                 var command = connection.CreateCommand();
-                command.CommandText = @"SELECT count(status) FROM orders WHERE status not like 'done';";
+                command.CommandText = @"SELECT count(status) FROM orders WHERE status not like 'finished';";
                 using (var reader = command.ExecuteReader())
                 {
                     if (reader.Read())
@@ -203,12 +202,12 @@ namespace Angon.common.storage
                 }
                 return -1;
             }
-            
+
         }
 
         public Order GetOldestNotFinishedOrder()
         {
-            lock(connection)
+            lock (connection)
             {
                 var command = connection.CreateCommand();
                 command.CommandText = @"SELECT * FROM orders where created_at=(SELECT MAX(CAST(created_at as integer)) FROM orders WHERE status not like 'done');";
@@ -243,7 +242,44 @@ namespace Angon.common.storage
                 }
                 return list;
             }
-            
+        }
+
+        public void RegisterSlave(Slave slave)
+        {
+            lock (connection)
+            {
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"INSERT INTO pool (ip, port, availableforwork, uniquetoken) VALUES($ip, $port, $afw, $ut)";
+
+                    command.Parameters.AddWithValue("$ip", slave.Ip);
+                    command.Parameters.AddWithValue("$port", slave.Port);
+                    command.Parameters.AddWithValue("$afw", slave.AvailableForWork);
+                    command.Parameters.AddWithValue("$ut", slave.UniqueToken);
+                    command.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+
+            }
+        }
+
+        public string SlaveExists(string ip)
+        {
+            lock (connection)
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = @"SELECT uniquetoken FROM pool WHERE ip=$ip;";
+                command.Parameters.AddWithValue("$ip", ip);
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetString(0);
+                    }
+                }
+                return "";
+            }
         }
 
         public bool ClientHasToken(string ip)
@@ -262,12 +298,12 @@ namespace Angon.common.storage
                 }
                 return false;
             }
-            
+
         }
 
         public bool ClientHasThisToken(string ip, string token)
         {
-            lock(connection)
+            lock (connection)
             {
                 var command = connection.CreateCommand();
                 command.CommandText = @"SELECT token FROM clients WHERE ip=$ip;";
@@ -281,7 +317,7 @@ namespace Angon.common.storage
                 }
                 return false;
             }
-            
+
         }
 
         public void RegisterClientToken(string ip, string token)
@@ -298,7 +334,7 @@ namespace Angon.common.storage
                     transaction.Commit();
                 }
             }
-            
+
         }
 
         public void UpdateSha(string sha)
@@ -308,18 +344,18 @@ namespace Angon.common.storage
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE orders SET sha=$sha WHERE id=(select seq from sqlite_sequence where name=orders);";
+                    command.CommandText = "UPDATE orders SET sha=$sha WHERE id=(select seq from sqlite_sequence where name='orders');";
                     command.Parameters.AddWithValue("sha", sha);
                     command.ExecuteNonQuery();
                     transaction.Commit();
                 }
             }
-            
+
         }
 
         public void DeleteLatestClientOrder()
         {
-            lock(connection)
+            lock (connection)
             {
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -329,12 +365,12 @@ namespace Angon.common.storage
                     transaction.Commit();
                 }
             }
-            
+
         }
 
         public string GetClientsToken()
         {
-            lock(connection)
+            lock (connection)
             {
                 var command = connection.CreateCommand();
                 command.CommandText = @"SELECT token FROM clients WHERE ip like 'localhost'";
@@ -347,7 +383,7 @@ namespace Angon.common.storage
                 }
                 return "";
             }
-            
+
         }
     }
 }

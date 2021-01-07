@@ -18,5 +18,8 @@ namespace Angon.common.cmd
 
         [Option('i', "inputfolder", Default = "", Required = false, HelpText = "The path to the folder containing the executable.")]
         public string PathToInputFolder { get; set; }
+
+        [Option('k', "sha", Default = "", Required = false, HelpText = "The sha to request from the master.")]
+        public string Sha { get; set; }
     }
 }

@@ -18,6 +18,32 @@ namespace Angon.client
     /// </summary>
     class Requester
     {
+
+        public static void RequestResultFromMaster(string sha)
+        {
+            RequestFinishedOrderHeader rfo = new RequestFinishedOrderHeader()
+            {
+#if DEBUG
+                ClientToken = "",
+#else
+                ClientToken = StorageProvider.GetInstance().GetClientsToken(),
+#endif
+                Ip = ConfigReader.GetInstance().Config.PredefinedIP == "" ? Networking.GetIPAddress() : ConfigReader.GetInstance().Config.PredefinedIP,
+                Sha = sha
+            };
+
+            WraperHeader wh = new WraperHeader()
+            {
+                Data = ByteArrayUtils.ToByteArray(rfo),
+                Type = HeaderTypes.RequestFinishedOrderHeader
+            };
+            TcpClient client = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.Port);
+            Sender.Send(wh, client);
+
+            new Reciever().ProcessClient(client);
+
+        }
+
         /// <summary>
         /// Start the ordering process with the two folders and creates a zip file with the parameters
         /// </summary>

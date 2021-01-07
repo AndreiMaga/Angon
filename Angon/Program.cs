@@ -1,9 +1,10 @@
 ﻿using Angon.client;
 using Angon.common.cmd;
 using Angon.common.config;
+using Angon.common.server;
 using Angon.common.storage;
 using Angon.master.scheduler;
-using Angon.common.server;
+using Angon.slave;
 using CommandLine;
 using Serilog;
 using System;
@@ -44,14 +45,14 @@ namespace Angon
 
             if (options.MasterMode)
             {
-                RunMaster(options);
+                RunMaster();
             }
             if (options.SlaveMode)
             {
-                RunSlave(options);
+                RunSlave();
             }
 
-            if (options.PathToExeFolder != "" && options.PathToInputFolder != "")
+            if ((options.PathToExeFolder != "" && options.PathToInputFolder != "") || options.Sha != "")
             {
                 RunClient(options);
             }
@@ -61,12 +62,12 @@ namespace Angon
             if (ConfigReader.GetInstance().Config.Type == 0) // Master
             {
                 // start new server
-                RunMaster(null);
+                RunMaster();
             }
 
             else if (ConfigReader.GetInstance().Config.Type == 1)
             {
-                // TODO slave
+                RunSlave();
             }
         }
 
@@ -86,8 +87,7 @@ namespace Angon
         /// <summary>
         /// Start up the master program.
         /// </summary>
-        /// <param name="options"><see cref="Options"/> parsed arguments from the command line</param>
-        static void RunMaster(Options options)
+        static void RunMaster()
         {
             Log.Information("Starting as master");
 
@@ -104,10 +104,13 @@ namespace Angon
         /// <summary>
         /// Start up the slave program.
         /// </summary>
-        /// <param name="options"><see cref="Options"/> parsed arguments from the command line</param>
-        static void RunSlave(Options options)
+        static void RunSlave()
         {
             Log.Information("Starting as slave");
+
+            StorageProvider.GetInstance().ClearOrders();
+
+            Register.RegisterToMaster();
 
             Task t = new Task(() =>
             {
@@ -128,7 +131,14 @@ namespace Angon
         {
             Log.Information("Starting as client");
             ConfigReader.GetInstance().Config.Type = 2; // force the type to 2
-            Requester.RunFromFolders(options.PathToExeFolder, options.PathToInputFolder);
+            if (options.Sha == "")
+            {
+                Requester.RunFromFolders(options.PathToExeFolder, options.PathToInputFolder);
+            }
+            else
+            {
+                Requester.RequestResultFromMaster(options.Sha);
+            }
             Environment.Exit(0);
         }
     }

@@ -27,7 +27,7 @@ namespace Angon.common.sender
                 ConfigReader.GetInstance().Config.WriteSize :
                 (int)size;
 
-            
+
             Log.Information("Sending {0} bytes!", size);
 
             byte[] byteArray = new byte[readSize];

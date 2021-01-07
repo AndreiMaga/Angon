@@ -25,6 +25,8 @@ namespace Angon.common.config
         /// </summary>
         public int Port { get; set; } = 8989;
 
+        public int MastersPort { get; set; } = 8989;
+
         /// <summary>
         /// Path to save temporary and result files to
         /// </summary>

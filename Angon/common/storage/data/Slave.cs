@@ -14,12 +14,6 @@
 
         public string Ip { get; set; }
         public int Port { get; set; }
-
-        /// <summary>
-        /// 0 = Ready for job
-        /// 1 = Running a job
-        /// 2 = Busy
-        /// </summary>
         public int AvailableForWork { get; set; }
         public string UniqueToken { get; set; }
 

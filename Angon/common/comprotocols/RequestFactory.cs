@@ -1,7 +1,5 @@
 ﻿using Angon.common.comprotocols.requests;
 using Angon.common.headers;
-using System;
-using System.Collections.Generic;
 
 namespace Angon.common.comprotocols
 {
@@ -20,15 +18,32 @@ namespace Angon.common.comprotocols
         {
             switch (wh.Type)
             {
-
                 case HeaderTypes.ClientHelloHeader:
                     return new RequestWithHeader<ClientHelloHeader>(wh.Data);
 
-                case HeaderTypes.ServerAvailableHeader:
+                case HeaderTypes.ServerHelloHeader:
                     return new RequestWithHeader<ServerHelloHeader>(wh.Data);
 
                 case HeaderTypes.JobHeader:
                     return new RequestWithHeader<JobHeader>(wh.Data);
+
+                case HeaderTypes.ServerAvailableHeader:
+                    return new RequestWithHeader<ServerAvailableHeader>(wh.Data);
+
+                case HeaderTypes.JobResultHeader:
+                    return new RequestWithHeader<JobResultHeader>(wh.Data);
+
+                case HeaderTypes.RegisterHeader:
+                    return new RequestWithHeader<RegisterHeader>(wh.Data);
+
+                case HeaderTypes.RegisterResponseHeader:
+                    return new RequestWithHeader<RegisterResponseHeader>(wh.Data);
+
+                case HeaderTypes.RequestFinishedOrderHeader:
+                    return new RequestWithHeader<RequestFinishedOrderHeader>(wh.Data);
+
+                case HeaderTypes.FinishedOrderHeader:
+                    return new RequestWithHeader<FinishedOrderHeader>(wh.Data);
 
                 default:
                     return new Request(wh.Data);

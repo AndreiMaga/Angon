@@ -6,6 +6,7 @@ using Angon.common.storage;
 using Angon.common.storage.data;
 using Angon.common.utils;
 using Angon.master.splitter;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Angon.master.scheduler
@@ -23,10 +25,10 @@ namespace Angon.master.scheduler
     {
         public static JobsConfig JobsConfig { get; private set; }
 
-        public Order Order { get; set; }
+        public static Order Order { get; set; }
         public OrderConfig OrderConfig { get; set; }
 
-        private string GetOrderPath { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha); }
+        public static string GetOrderPath { get => Path.Combine(ConfigReader.GetInstance().Config.SavePath, Order.Sha); }
 
         public Scheduler() { }
 
@@ -41,7 +43,7 @@ namespace Angon.master.scheduler
 
                 // No more orders to run
                 // sleep for time specified in config and try again
-                Task.Delay(ConfigReader.GetInstance().Config.MilisecondsToSleep);
+                Thread.Sleep(ConfigReader.GetInstance().Config.MilisecondsToSleep);
             }
         }
 
@@ -60,7 +62,7 @@ namespace Angon.master.scheduler
                 File.Delete(Path.Combine(GetOrderPath, "temp.zip"));
 
             // check if it's running as Slave
-            if( ConfigReader.GetInstance().Config.Type == 1)
+            if (ConfigReader.GetInstance().Config.Type == 1)
             {
                 // The scheduler it's inside a slave
                 ContinueSlave();
@@ -91,38 +93,95 @@ namespace Angon.master.scheduler
 
         private void ContinueSlave()
         {
+
+            string pathToInputDirectory = Path.Combine(GetOrderPath, "unzip", "input");
+            string defaultRes = Path.Combine(GetOrderPath, "unzip", "result");
             // Check if the program exists in the exe folder
             string pathToExecutable = Path.Combine(GetOrderPath, "unzip", "exe", OrderConfig.NameOfExecutable);
+
+#if DEBUG
+            Log.Debug("Trying to execute: {0}", pathToExecutable);
+#endif
+
             FileInfo fi = new FileInfo(pathToExecutable);
             if (fi.FullName.Length != pathToExecutable.Length) // if the exe is reffered to with .. or in another folder
             {
+                Log.Warning("Missmatch on length: {0} vs {1}", fi.FullName.Length, pathToExecutable.Length);
                 // don't run anything
                 return;
             }
 
             if (!fi.Exists) // if the exe does not exist
             {
+                Log.Warning("Executable does not exist! {0}", pathToExecutable);
                 // don't run anything
                 return;
             }
 
-            if(ConfigReader.GetInstance().Config.VerifySignature)
+            if (ConfigReader.GetInstance().Config.VerifySignature)
             {
+                Log.Information("Verifying Signature of the exe.");
                 if (!SecurityUtils.FileIsSigned(pathToExecutable))
+                {
+                    Log.Warning("Signature not found.");
                     return;
+                }
             }
 
+            Log.Information("Running the executable.");
+
+            string arguments = OrderConfig.ArgumentsForExecutable;
+
+            Regex r = new Regex(@"\{inputDir\}");
+            arguments = r.Replace(arguments, pathToInputDirectory);
+            r = new Regex(@"\{defaultRes\}");
+            arguments = r.Replace(arguments, defaultRes);
+            Log.Information("Running with arguments: {0}", arguments);
             // if all checks are fine
             // run exe with arguments passed in the order config
-            Process p = Process.Start(pathToExecutable, OrderConfig.ArgumentsForExecutable);
+            Process p = Process.Start(pathToExecutable, arguments);
             p.WaitForExit();
 
+            Log.Information("The executable is done.");
             // the process is finished send it back to the master
-            if(p.ExitCode == OrderConfig.SuccessExitCode)
+            if (p.ExitCode == OrderConfig.SuccessExitCode)
             {
+                Log.Information("Finished succesfully.");
                 // Everything is ok
                 // Zip result and send it to master
+                SendResultToMaster();
+                StorageProvider.GetInstance().ClearOrders(); // clears orders in slave
             }
+        }
+
+        private void SendResultToMaster()
+        {
+            Log.Information("Sending the results back to the master.");
+            string pathToResult = Path.Combine(GetOrderPath, "unzip", "exe", OrderConfig.RelativePathFromExeToResult);
+            string pathToZip = Path.Combine(GetOrderPath, "result.zip");
+            ZipFile.CreateFromDirectory(pathToResult, pathToZip);
+
+            JobResultHeader jobResultHeader = new JobResultHeader
+            {
+                JobID = Order.Sha,
+                Size = new FileInfo(pathToZip).Length
+            };
+
+            WraperHeader wraperHeader = new WraperHeader
+            {
+                Type = HeaderTypes.JobResultHeader,
+                Data = ByteArrayUtils.ToByteArray(jobResultHeader)
+            };
+
+#if DEBUG
+            Log.Debug("Sending {0} with the size of {1}", jobResultHeader.JobID, jobResultHeader.Size);
+#endif
+
+            TcpClient client = new TcpClient(ConfigReader.GetInstance().Config.Ip, ConfigReader.GetInstance().Config.MastersPort);
+
+            Sender.Send(wraperHeader, client);
+            Sender.SendZip(pathToZip, client.GetStream());
+            client.Close();
         }
 
         private JobsConfig GetJobsConfig()
@@ -130,11 +189,7 @@ namespace Angon.master.scheduler
             string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
             if (File.Exists(path))
             {
-                using (FileStream fs = File.OpenRead(path))
-                {
-                    return JsonSerializer.DeserializeAsync<JobsConfig>(fs).Result;
-                }
-
+                return JsonConvert.DeserializeObject<JobsConfig>(File.ReadAllText(path));
             }
             return CreateJobsConfig();
         }
@@ -154,10 +209,16 @@ namespace Angon.master.scheduler
         private void SaveStateOfJobsConfig()
         {
             string path = Path.Combine(GetOrderPath, "unzip", "jobconfig.json");
-            using (FileStream fs = File.Open(path, FileMode.OpenOrCreate))
+
+            if (!File.Exists(path))
             {
-                JsonSerializer.SerializeAsync(fs, JobsConfig);
+                File.Create(path).Close();
             }
+
+            string json = JsonConvert.SerializeObject(JobsConfig, Formatting.Indented);
+
+            File.WriteAllText(path, json);
+
         }
 
         private void GetOrderConfig()
@@ -171,10 +232,9 @@ namespace Angon.master.scheduler
 #endif
                 try
                 {
-                    using (FileStream fs = File.OpenRead(path))
-                    {
-                        OrderConfig = JsonSerializer.DeserializeAsync<OrderConfig>(fs).Result;
-                    }
+
+                    OrderConfig = JsonConvert.DeserializeObject<OrderConfig>(File.ReadAllText(path));
+
                 }
                 catch (Exception e)
                 {
@@ -222,14 +282,25 @@ namespace Angon.master.scheduler
             }
             JobsConfig.SentJobs = new List<string>();
 
+            if (!Directory.Exists(Path.Combine(GetOrderPath, "result")))
+            {
+                Directory.CreateDirectory(Path.Combine(GetOrderPath, "result"));
+            }
+
             List<Slave> listOfSlaves = CheckWhichSlavesAreAvailable();
             while (JobsConfig.FinishedJobs.Count != JobsConfig.numberOfJobs)
             {
+
+                // check for completed jobs in the order's "result" folder
+
+
                 // if jobs are pending to be sent
                 if (JobsConfig.Jobs.Count != 0)
                 {
                     foreach (Slave slave in listOfSlaves)
                     {
+                        if (slave.HasJob)
+                            continue;
                         SendJob(slave);
                         // if all jobs were sent
                         if (JobsConfig.Jobs.Count == 0)
@@ -257,14 +328,46 @@ namespace Angon.master.scheduler
                     // will be replaced with database info
                     if (slave.HasJob)
                     {
-                        updatedlistOfSlaves.Find(ns => ns.UniqueToken.Equals(slave.UniqueToken)).HasJob = true;
+                        Slave s = updatedlistOfSlaves.Find(ns => ns.UniqueToken.Equals(slave.UniqueToken));
+                        s.HasJob = true;
+                        s.AssignedJob = slave.AssignedJob;
                     }
                 }
                 listOfSlaves = updatedlistOfSlaves;
-                Task.Delay(ConfigReader.GetInstance().Config.MilisecondsToSleep);
+                CheckFinishedJobs(listOfSlaves);
+                Thread.Sleep(5000);
+                CheckFinishedJobs(listOfSlaves);
             }
             // if all jobs are completed mark the order as done on the database and concat the results
             // might be able to have people create their own merger tool that get's uploaded with the exe
+
+            StorageProvider.GetInstance().FinishedOrder(Order);
+        }
+
+        public void CheckFinishedJobs(List<Slave> slaves)
+        {
+            int i;
+            List<string> files = Directory.GetDirectories(Path.Combine(GetOrderPath, "result")).ToList();
+            List<string> finishedJobsNow = new List<string>();
+            foreach (string job in JobsConfig.SentJobs)
+            {
+                string jobName = job.Split('\\').ToList().Last();
+                for (i = 0; i < files.Count; i++)
+                {
+                    if (jobName == files[i].Split('\\').ToList().Last())
+                    {
+                        finishedJobsNow.Add(jobName);
+                    }
+                }
+            }
+
+            foreach (string job in finishedJobsNow)
+            {
+                JobsConfig.FinishedJobs.Add(job);
+                JobsConfig.SentJobs = JobsConfig.SentJobs.Where(x => x.Split('\\').ToList().Last() != job).ToList();
+                slaves.Find(s => s.AssignedJob.Split('\\').ToList().Last() == job).HasJob = false;
+            }
+
         }
 
         private void SendJob(Slave slave)
@@ -283,7 +386,7 @@ namespace Angon.master.scheduler
                 Type = HeaderTypes.JobHeader,
                 Data = ByteArrayUtils.ToByteArray(new JobHeader
                 {
-                    JobID = job,
+                    JobID = job.Split('\\').Last(),
                     Size = fi.Length
                 })
             };
@@ -298,6 +401,7 @@ namespace Angon.master.scheduler
 
             // after it's sent
             JobsConfig.Jobs.Remove(job);
+            JobsConfig.SentJobs.Add(job);
             SaveStateOfJobsConfig();
         }
 
@@ -334,10 +438,12 @@ namespace Angon.master.scheduler
 
             // for each job, take the job input and the exe , pack them into a zip and move them
             // into resultpath
-            foreach (string job in JobsConfig.Jobs)
+            for (int i = 0; i < JobsConfig.Jobs.Count; i++)
             {
+                string job = JobsConfig.Jobs[i];
                 IOUtils.DirectoryCopy(job, Path.Combine(temppath, "input"), true);
-                ZipFile.CreateFromDirectory(temppath, Path.Combine(resultpath, new DirectoryInfo(job).Name));
+                string res = Path.Combine(resultpath, new DirectoryInfo(job).Name + ".zip");
+                ZipFile.CreateFromDirectory(temppath, res);
 
                 if (ConfigReader.GetInstance().Config.DeleteSplitFolderAfterJobZip)
                 {
@@ -346,6 +452,7 @@ namespace Angon.master.scheduler
 
                 // delete the input folder from the temp path as another might take it's place
                 Directory.Delete(Path.Combine(temppath, "input"), true);
+                JobsConfig.Jobs[i] = res;
             }
 
             // all jobs are in resultpath
@@ -354,8 +461,9 @@ namespace Angon.master.scheduler
         private List<Slave> CheckWhichSlavesAreAvailable()
         {
             StorageProvider.GetInstance().GetSlaves().ForEach(CheckerStart); // this will change the list
-
-            return StorageProvider.GetInstance().GetSlaves().FindAll(s => s.AvailableForWork != 2);
+            // this is a race condition, so for right now, scheduler is gonna wait a few seconds
+            Task.Delay(2000);
+            return StorageProvider.GetInstance().GetSlaves().FindAll(s => s.AvailableForWork != 1);
 
         }
 
@@ -368,7 +476,7 @@ namespace Angon.master.scheduler
                 ServerAvailableHeader sah = new ServerAvailableHeader();
                 WraperHeader wh = new WraperHeader()
                 {
-                    Type = 'K',
+                    Type = HeaderTypes.ServerAvailableHeader,
                     Data = ByteArrayUtils.ToByteArray(sah)
                 };
                 Sender.Send(wh, tcp);

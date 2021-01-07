@@ -5,17 +5,19 @@ using System.Runtime.Serialization;
 namespace Angon.common.headers
 {
     [Serializable]
-    class ServerAvailableHeader : ISerializable
+    class RequestFinishedOrderHeader : ISerializable
     {
-        public bool Available = false;
-        public string UniqueToken = "";
-        public ServerAvailableHeader() { }
-        public ServerAvailableHeader(SerializationInfo info, StreamingContext context)
+        public string ClientToken { get; set; }
+        public string Ip { get; set; }
+        public string Sha { get; set; }
+        public RequestFinishedOrderHeader() { }
+        public RequestFinishedOrderHeader(SerializationInfo info, StreamingContext context)
         {
             foreach (PropertyInfo fi in GetType().GetProperties())
             {
                 fi.SetValue(this, info.GetValue(fi.Name, fi.PropertyType));
             }
+
         }
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {

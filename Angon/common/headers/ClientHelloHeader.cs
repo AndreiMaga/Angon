@@ -15,6 +15,8 @@ namespace Angon.common.headers
         public string ClientVersion { get; set; }
         public string ClientToken { get; set; }
 
+        public bool RequestingOrderStatus { get; set; } = false;
+
         public ClientHelloHeader() { }
         public ClientHelloHeader(SerializationInfo info, StreamingContext context)
         {

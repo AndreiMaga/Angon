@@ -2,7 +2,7 @@
     "Type": 0,
     "Ip": "127.0.0.1",
     "Port": 8989,
-    "SavePath": "D:\\temp",
+    "SavePath": "D:\\temp\\master",
     "ReadSize": 512,
     "WriteSize": 512,
     "PredefinedIP": "127.0.0.1",

@@ -7,8 +7,10 @@ namespace Angon.common.headers
     [Serializable]
     class JobResultHeader : ISerializable
     {
-        string JobID { get; set; }
+        public long Size { get; set; }
+        public string JobID { get; set; }
 
+        public JobResultHeader() { }
         public JobResultHeader(SerializationInfo info, StreamingContext context)
         {
             foreach (PropertyInfo fi in GetType().GetProperties())

@@ -83,7 +83,7 @@ namespace Angon.common.reciever
             {
                 if (ConfigReader.GetInstance().Config.RestrictUnknownConnections)
                 {
-                    if(!ConfigReader.GetInstance().Config.KnownIPs.Contains((client.Client.RemoteEndPoint as IPEndPoint).Address.ToString()))
+                    if (!ConfigReader.GetInstance().Config.KnownIPs.Contains((client.Client.RemoteEndPoint as IPEndPoint).Address.ToString()))
                     {
                         return false;
                     }

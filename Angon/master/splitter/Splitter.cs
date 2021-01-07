@@ -146,8 +146,8 @@ namespace Angon.master.splitter
                 groups.Count,
                 groups.Average(x => x.Sum(y => y.Length))
                 );
-            Log.Debug("Max Group size:{0}", groups.Max(x => x.Max(y => y.Length )));
-            Log.Debug("Min Group size:{0}", groups.Min(x => x.Min(y => y.Length )));
+            Log.Debug("Max Group size:{0}", groups.Max(x => x.Max(y => y.Length)));
+            Log.Debug("Min Group size:{0}", groups.Min(x => x.Min(y => y.Length)));
 #endif
 
             foreach (List<FileInfo> group in groups)

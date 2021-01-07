@@ -5,12 +5,14 @@ using System.Runtime.Serialization;
 namespace Angon.common.headers
 {
     [Serializable]
-    class ServerAvailableHeader : ISerializable
+    class RegisterHeader : ISerializable
     {
-        public bool Available = false;
-        public string UniqueToken = "";
-        public ServerAvailableHeader() { }
-        public ServerAvailableHeader(SerializationInfo info, StreamingContext context)
+
+        public string Ip { get; set; }
+        public int Port { get; set; }
+
+        public RegisterHeader() { }
+        public RegisterHeader(SerializationInfo info, StreamingContext context)
         {
             foreach (PropertyInfo fi in GetType().GetProperties())
             {

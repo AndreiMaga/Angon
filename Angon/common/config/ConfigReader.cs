@@ -1,6 +1,6 @@
-﻿using Serilog;
+﻿using Newtonsoft.Json;
+using Serilog;
 using System.IO;
-using System.Text.Json;
 
 namespace Angon.common.config
 {
@@ -26,7 +26,7 @@ namespace Angon.common.config
         private ConfigReader()
         {
             Log.Information("Loading config.json");
-            Config = JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"));
+            Config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@"config.json"));
         }
 
         /// <summary>
